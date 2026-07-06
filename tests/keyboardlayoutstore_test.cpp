@@ -4,6 +4,7 @@
 #include "keyboardlayoutstore.h"
 
 #include <QSettings>
+#include <QSet>
 #include <QTest>
 #include <QVariantMap>
 
@@ -23,7 +24,18 @@ private slots:
     {
         KeyboardLayoutStore initial;
         QCOMPARE(initial.layoutId(), QStringLiteral("us"));
-        QCOMPARE(initial.availableLayouts().size(), 2);
+        const QVariantList layouts = initial.availableLayouts();
+        QVERIFY(layouts.size() >= 8);
+        QSet<QString> layoutIds;
+        for (const QVariant &layout : layouts) {
+            layoutIds.insert(layout.toMap().value(QStringLiteral("id")).toString());
+        }
+        for (const QString &id : {QStringLiteral("au"), QStringLiteral("ca-eng"),
+                                  QStringLiteral("gb"), QStringLiteral("ie"),
+                                  QStringLiteral("in-eng"), QStringLiteral("nz"),
+                                  QStringLiteral("us"), QStringLiteral("za")}) {
+            QVERIFY2(layoutIds.contains(id), qPrintable(id));
+        }
         QCOMPARE(initial.rows().size(), 5);
         QVERIFY(!initial.selectLayout(QStringLiteral("../../unsafe")));
         QVERIFY(initial.selectLayout(QStringLiteral("gb")));

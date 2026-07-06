@@ -88,9 +88,10 @@ experimental and disabled by default because the current fallback temporarily
 uses the clipboard before sending `Ctrl+V`, then attempts to restore the
 previous clipboard text.
 
-Regional main-keyboard layouts are JSON resources. Imboard includes US and GB
-layouts; see [Adding keyboard layouts](docs/keyboard-layouts.md) for the extension
-schema.
+Regional main-keyboard layouts are JSON resources. Imboard includes common
+English QWERTY regional choices and behaves like a physical keyboard: choose the
+layout that matches the current KDE or SteamOS system keyboard layout. See
+[Adding keyboard layouts](docs/keyboard-layouts.md) for the extension schema.
 
 The local Flatpak development manifest and test procedure are described in
 [Flatpak development build](docs/flatpak-development.md).
@@ -113,6 +114,8 @@ current component ownership and runtime flow are documented in
 - Portal permission wording varies by desktop and may mention Input Device,
   Remote Desktop, or Remote Control even though Imboard requests keyboard
   capability only.
+- The selected Imboard layout must match the desktop keyboard layout for shifted
+  symbols to match the key labels.
 - Non-KDE Wayland desktops are not supported targets. Imboard shows a one-time
   compatibility note if launched outside KDE.
 

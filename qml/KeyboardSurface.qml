@@ -319,6 +319,7 @@ Rectangle {
                 border.color: Qt.alpha(root.appearanceStore.secondary, 0.66)
             }
             AlphaBoard {
+                id: alphaBoard
                 anchors.fill: parent
                 anchors.margins: 8
                 appearanceStore: root.appearanceStore
@@ -351,6 +352,7 @@ Rectangle {
                 appearanceStore: root.appearanceStore
                 customKeyStore: root.customKeyStore
                 inputBackend: root.inputController
+                modifierSource: alphaBoard
             }
         }
     }

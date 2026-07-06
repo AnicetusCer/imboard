@@ -12,13 +12,13 @@ Popup {
 
     required property var appearanceStore
     required property var keyboardLayoutStore
-    property real renderedOptionHeight: 76
+    property real renderedOptionHeight: 58
 
     objectName: "layoutPopup"
     x: Math.round((parent.width - width) / 2)
     y: Math.round((parent.height - height) / 2)
-    width: Math.min(500, parent.width - 40)
-    height: Math.min(180, parent.height - 30)
+    width: Math.min(620, parent.width - 40)
+    height: Math.min(420, parent.height - 30)
     padding: 12
     modal: true
     dim: false
@@ -69,14 +69,34 @@ Popup {
             }
         }
 
+        Label {
+            Layout.fillWidth: true
+            text: "Choose the layout that matches KDE/SteamOS. IMBOARD behaves like a physical keyboard and does not change the system layout."
+            color: root.appearanceStore.secondary
+            wrapMode: Text.WordWrap
+            font.pixelSize: 10
+            style: Text.Outline
+            styleColor: "#f0000000"
+        }
+
+        Label {
+            Layout.fillWidth: true
+            text: "Quick check: Shift+2 should match your desktop. If it types @, choose a US-like layout. If it types \", choose GB or IE."
+            color: root.appearanceStore.primary
+            wrapMode: Text.WordWrap
+            font.pixelSize: 10
+            style: Text.Outline
+            styleColor: "#f0000000"
+        }
+
         GridLayout {
             Layout.fillWidth: true
             Layout.fillHeight: true
-            Layout.minimumHeight: 70
-            Layout.preferredHeight: 76
+            Layout.minimumHeight: 220
+            Layout.preferredHeight: 300
             columns: 2
             columnSpacing: 8
-            rowSpacing: 8
+            rowSpacing: 6
 
             Repeater {
                 model: root.keyboardLayoutStore.availableLayouts
@@ -84,7 +104,7 @@ Popup {
                     id: layoutOption
                     required property var modelData
                     objectName: "layoutChoice_" + modelData.id
-                    implicitHeight: 70
+                    implicitHeight: 58
                     implicitWidth: 190
                     Layout.fillWidth: true
                     Layout.fillHeight: true

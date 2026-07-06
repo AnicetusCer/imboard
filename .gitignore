@@ -6,3 +6,4 @@ flatpak-repo/
 .idea/
 .vscode/
 *.user
+/temp

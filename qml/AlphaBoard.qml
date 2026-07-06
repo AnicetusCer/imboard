@@ -14,6 +14,8 @@ Item {
     required property var layoutStore
 
     property bool shifted: false
+    property bool shiftLocked: false
+    property bool shiftLongPressConsumed: false
     property bool capsLocked: false
     property bool controlHeld: false
     property bool altHeld: false
@@ -28,39 +30,84 @@ Item {
         return false
     }
 
+    function anyModifierActive() {
+        return shifted || controlHeld || altHeld || metaHeld
+    }
+
+    function repeatableKey(value) {
+        return ["Backspace", "Delete", "Left", "Right", "Up", "Down",
+                "Home", "End", "PageUp", "PageDown"].indexOf(value) >= 0
+    }
+
     function toggleModifier(value) {
-        if (value === "Shift") shifted = !shifted
+        if (value === "Shift") {
+            if (shiftLocked) {
+                shiftLocked = false
+                shifted = false
+            } else {
+                shifted = !shifted
+            }
+        }
         else if (value === "Ctrl") controlHeld = !controlHeld
         else if (value === "Alt") altHeld = !altHeld
         else if (value === "Meta") metaHeld = !metaHeld
     }
 
+    function holdModifier(value) {
+        if (value !== "Shift") return
+        shiftLocked = true
+        shifted = true
+        shiftLongPressConsumed = true
+    }
+
+    function clearOneShotShift() {
+        if (!shiftLocked) shifted = false
+    }
+
     function sendCharacter(key) {
         let value = key.value
+        const modifiers = activeCommandModifiers()
         if (key.type === "letter") {
-            const upperCase = shifted !== capsLocked
-            value = upperCase ? key.value.toUpperCase() : key.value
+            const commandModifierHeld = modifiers.length > 0
+            const upperCase = commandModifierHeld ? shifted : shifted !== capsLocked
+            if (upperCase) modifiers.push("Shift")
+            value = key.value.toLowerCase()
         } else if (shifted && key.shiftedValue) {
-            value = key.shiftedValue
+            modifiers.push("Shift")
         }
 
+        if (modifiers.length > 0) inputBackend.sendChord(modifiers, value)
+        else inputBackend.sendText(value)
+        clearOneShotShift()
+    }
+
+    function activeCommandModifiers() {
         const modifiers = []
         if (controlHeld) modifiers.push("Ctrl")
         if (altHeld) modifiers.push("Alt")
         if (metaHeld) modifiers.push("Meta")
-        if (modifiers.length > 0) inputBackend.sendChord(modifiers, value)
-        else inputBackend.sendText(value)
-        shifted = false
+        return modifiers
+    }
+
+    function sendSpecialKey(key) {
+        const modifiers = activeCommandModifiers()
+        if (shifted) modifiers.push("Shift")
+        if (modifiers.length > 0) inputBackend.sendChord(modifiers, key.value)
+        else inputBackend.sendKey(key.value)
+        clearOneShotShift()
     }
 
     function activate(key) {
+        if (key.value === "Shift" && shiftLongPressConsumed) {
+            shiftLongPressConsumed = false
+            if (!shiftLocked) return
+        }
         if (key.type === "modifier") {
             toggleModifier(key.value)
         } else if (key.type === "lock") {
             capsLocked = !capsLocked
-            inputBackend.sendKey(key.value)
         } else if (key.type === "key") {
-            inputBackend.sendKey(key.value)
+            sendSpecialKey(key)
         } else {
             sendCharacter(key)
         }
@@ -91,14 +138,20 @@ Item {
                                   ? modelData.label.toUpperCase()
                                   : root.shifted && modelData.shiftedLabel
                                     ? modelData.shiftedLabel : modelData.label
+                        subLabel: modelData.value === "Shift" && root.shiftLocked
+                                  ? "LOCK" : ""
                         repeatEnabled: modelData.type === "key"
-                                       && modelData.value === "Backspace"
+                                       && root.repeatableKey(modelData.value)
+                                       && !root.anyModifierActive()
                         toolTipText: modelData.shiftedLabel && !root.shifted
                                      ? "Shift: " + modelData.shiftedLabel : ""
                         accent: modelData.type === "lock" && root.capsLocked
                                 ? "#72ff9f"
-                                : modelData.type === "modifier" && root.modifierActive(modelData.value)
+                                : modelData.value === "Shift" && root.shiftLocked
+                                  ? "#ffcf5a"
+                                  : modelData.type === "modifier" && root.modifierActive(modelData.value)
                                   ? "#72ff9f" : root.appearanceStore.primary
+                        onPressAndHold: root.holdModifier(modelData.value)
                         onClicked: root.activate(modelData)
                     }
                 }

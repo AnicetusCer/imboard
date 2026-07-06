@@ -18,14 +18,58 @@ Button {
     property bool repeatEnabled: false
     readonly property bool hasSubLabel: subLabel.length > 0
     readonly property bool multiLineLabel: keyLabel.indexOf("\n") >= 0
+    property bool manualRepeatActive: false
 
     text: keyLabel
     font.pixelSize: compact ? 9 : Math.max(12, Math.min(18, height * 0.22))
     font.weight: Font.Medium
     hoverEnabled: true
     autoRepeat: repeatEnabled
-    autoRepeatDelay: 420
-    autoRepeatInterval: 55
+    autoRepeatDelay: 520
+    autoRepeatInterval: 125
+
+    onPressed: {
+        if (repeatEnabled) repeatStartTimer.restart()
+    }
+    onReleased: root.stopManualRepeat()
+    onCanceled: root.stopManualRepeat()
+    onPressAndHold: {
+        if (repeatEnabled) root.startManualRepeat()
+    }
+
+    function startManualRepeat() {
+        manualRepeatActive = true
+        repeatStartTimer.stop()
+        repeatTimer.restart()
+    }
+
+    function stopManualRepeat() {
+        manualRepeatActive = false
+        repeatStartTimer.stop()
+        repeatTimer.stop()
+    }
+
+    Timer {
+        id: repeatStartTimer
+        interval: root.autoRepeatDelay
+        repeat: false
+        onTriggered: {
+            if (root.down && root.repeatEnabled) root.startManualRepeat()
+        }
+    }
+
+    Timer {
+        id: repeatTimer
+        interval: root.autoRepeatInterval
+        repeat: true
+        onTriggered: {
+            if (root.down && root.repeatEnabled && root.manualRepeatActive) {
+                root.clicked()
+            } else {
+                root.stopManualRepeat()
+            }
+        }
+    }
 
     ToolTip {
         id: keyToolTip

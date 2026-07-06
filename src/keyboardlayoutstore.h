@@ -37,6 +37,7 @@ private:
         QVariantList rows;
     };
 
+    void addLayoutAlias(const QString &aliasId, const QString &aliasName, const QString &sourceId);
     void loadLayouts();
     static QVariantList normalizedRows(const QVariantList &rows);
 

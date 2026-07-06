@@ -13,6 +13,7 @@ Item {
     required property var appearanceStore
     required property var customKeyStore
     required property var inputBackend
+    required property var modifierSource
 
     property bool editMode: false
     property bool pickerOpen: false
@@ -440,16 +441,47 @@ Item {
         return "nav"
     }
 
+    function repeatableKey(value) {
+        return ["Backspace", "Delete", "Left", "Right", "Up", "Down",
+                "Home", "End", "PageUp", "PageDown"].indexOf(value) >= 0
+    }
+
+    function repeatableAction(action) {
+        return action[1] === "key" && repeatableKey(action[2])
+               && !modifierSource.anyModifierActive()
+    }
+
+    function repeatableAssignment(assignment) {
+        return assignment && assignment.type === "key" && repeatableKey(assignment.value)
+               && !modifierSource.anyModifierActive()
+    }
+
+    function activeKeyModifiers() {
+        const modifiers = []
+        if (modifierSource.controlHeld) modifiers.push("Ctrl")
+        if (modifierSource.altHeld) modifiers.push("Alt")
+        if (modifierSource.metaHeld) modifiers.push("Meta")
+        if (modifierSource.shifted) modifiers.push("Shift")
+        return modifiers
+    }
+
+    function sendKeyWithActiveModifiers(value) {
+        const modifiers = activeKeyModifiers()
+        if (modifiers.length > 0) inputBackend.sendChord(modifiers, value)
+        else inputBackend.sendKey(value)
+        modifierSource.clearOneShotShift()
+    }
+
     function trigger(action) {
         if (action[1] === "text") inputBackend.sendText(action[2])
-        else if (action[1] === "key") inputBackend.sendKey(action[2])
+        else if (action[1] === "key") sendKeyWithActiveModifiers(action[2])
         else if (action[1] === "chord") inputBackend.sendChord(action[2], action[3])
     }
 
     function triggerAssignment(assignment) {
         if (!assignment || !assignment.type) return
         if (assignment.type === "text") inputBackend.sendText(assignment.value)
-        else if (assignment.type === "key") inputBackend.sendKey(assignment.value)
+        else if (assignment.type === "key") sendKeyWithActiveModifiers(assignment.value)
         else if (assignment.type === "chord")
             inputBackend.sendChord(assignment.modifiers, assignment.key)
     }
@@ -526,6 +558,7 @@ Item {
                     keyLabel: standardKey.modelData[0]
                     accent: root.appearanceStore.primary
                     toolTipText: standardKey.modelData.length > 4 ? standardKey.modelData[4] : ""
+                    repeatEnabled: root.repeatableAction(standardKey.modelData)
                     onClicked: root.trigger(standardKey.modelData)
                 }
             }
@@ -619,6 +652,8 @@ Item {
                                             ? customSlotKey.assignment.description : "Unassigned")
                             toolTipIcon: customSlotKey.assignment && customSlotKey.assignment.icon
                                          ? customSlotKey.assignment.icon : ""
+                            repeatEnabled: !root.editMode
+                                           && root.repeatableAssignment(customSlotKey.assignment)
                             onClicked: {
                                 if (root.editMode) {
                                     root.selectedSlot = customSlotKey.index

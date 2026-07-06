@@ -121,7 +121,31 @@ void KeyboardLayoutStore::loadLayouts()
     }
     if (m_layouts.isEmpty()) {
         qCritical() << "No valid built-in keyboard layouts were found";
+        return;
     }
+
+    addLayoutAlias(QStringLiteral("au"), QStringLiteral("English (Australia)"),
+                   QStringLiteral("us"));
+    addLayoutAlias(QStringLiteral("ca-eng"), QStringLiteral("English (Canada)"),
+                   QStringLiteral("us"));
+    addLayoutAlias(QStringLiteral("in-eng"), QStringLiteral("English (India)"),
+                   QStringLiteral("us"));
+    addLayoutAlias(QStringLiteral("nz"), QStringLiteral("English (New Zealand)"),
+                   QStringLiteral("us"));
+    addLayoutAlias(QStringLiteral("za"), QStringLiteral("English (South Africa)"),
+                   QStringLiteral("us"));
+    addLayoutAlias(QStringLiteral("ie"), QStringLiteral("Irish / English (Ireland)"),
+                   QStringLiteral("gb"));
+}
+
+void KeyboardLayoutStore::addLayoutAlias(const QString &aliasId,
+                                         const QString &aliasName,
+                                         const QString &sourceId)
+{
+    if (!m_layouts.contains(sourceId) || m_layouts.contains(aliasId)) return;
+    Layout layout = m_layouts.value(sourceId);
+    layout.name = aliasName;
+    m_layouts.insert(aliasId, layout);
 }
 
 QVariantList KeyboardLayoutStore::normalizedRows(const QVariantList &rows)

@@ -1,6 +1,12 @@
 # Keyboard layouts
 
-Imboard keyboard regions are data files under `layouts/`. To add a layout:
+Imboard keyboard regions are data files under `layouts/`. Imboard sends
+physical-key-like events through the keyboard portal, so the selected Imboard
+layout must match the active KDE or SteamOS system keyboard layout. The layout
+choice changes Imboard's labels and key assumptions; it does not change the
+desktop layout.
+
+To add a layout:
 
 1. Copy `layouts/us.json` to a short lowercase layout ID such as `de.json`.
 2. Change its top-level `id`, `name`, and key rows.
@@ -9,6 +15,10 @@ Imboard keyboard regions are data files under `layouts/`. To add a layout:
 
 The layout store discovers every registered JSON resource at startup. It rejects
 malformed files rather than exposing unchecked data to QML.
+
+Several common English regional layouts are aliases of the built-in US or GB
+resources where XKB uses the same visible QWERTY symbol map. Add a separate JSON
+file when the physical key positions or shifted symbols differ.
 
 Each key supports:
 
@@ -24,4 +34,5 @@ The built-in `gb` layout intentionally keeps the same visual geometry as the
 `us` layout. It changes regional symbols such as Shift+2 for double quote,
 Shift+3 for pound sterling, quote shifting to `@`, and the US backslash-position
 key becoming `#/~`. Less common displaced symbols such as backslash and pipe
-remain available from the developer pad.
+remain available from the developer pad. A quick manual check is Shift+2: if the
+focused app types `@`, use a US-like layout; if it types `"`, use GB or IE.
