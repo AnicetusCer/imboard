@@ -84,9 +84,11 @@ flatpak run --command=flatpak-builder-lint org.flatpak.Builder repo repo
    - Imboard is designed and tested for KDE Wayland, especially SteamOS
      Desktop Mode, with Fedora KDE Wayland also validated.
    - The app requests the Remote Desktop portal with keyboard capability only.
-   - Static sandbox permissions are limited to Wayland, IPC, DRI, and KDE
-     status notifier DBus access.
-   - No network, X11, host filesystem, pointer, touchscreen, screencast,
-     camera, or location access is requested.
+   - Static sandbox permissions are limited to Wayland, fallback X11, IPC, DRI,
+     and KDE status notifier DBus access.
+   - The fallback X11 socket is present for Flathub's native-Wayland packaging
+     rule; the supported target remains KDE Wayland.
+   - No network, host filesystem, pointer, touchscreen, screencast, camera, or
+     location access is requested.
    - Gamescope/Gaming Mode and non-KDE desktops are outside the supported
      target scope.

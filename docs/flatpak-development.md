@@ -2,9 +2,10 @@
 
 Imboard's development manifest uses the KDE 6.10 runtime and builds the
 current working tree together with a pinned layer-shell-qt dependency. It grants
-Wayland, shared-memory, and GPU access. It does not grant X11, network, or host
-filesystem access. Keyboard events are sent through the user-approved XDG Remote
-Desktop portal.
+Wayland, fallback X11, shared-memory, and GPU access. The fallback X11 socket is
+included for Flatpak packaging compatibility; Imboard's supported target remains
+KDE Wayland. It does not grant network or host filesystem access. Keyboard
+events are sent through the user-approved XDG Remote Desktop portal.
 
 Install the build tools and matching SDK from Flathub, then build and install:
 

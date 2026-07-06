@@ -63,7 +63,8 @@ Read these docs before changing behavior:
 - Flathub submission path documented in `docs/flathub-submission.md`.
 - Public-release safety notes documented in `docs/public-release-audit.md`.
 - Security polish pass completed:
-  - no X11 fallback socket;
+  - fallback X11 socket included only for Flathub's native-Wayland packaging
+    rule;
   - no network permission;
   - no host filesystem permission;
   - local control socket rejects oversized commands;
