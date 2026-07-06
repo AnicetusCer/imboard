@@ -1,15 +1,15 @@
 # Imboard
 
-Imboard, short for Input Method Board, is a Steam Deck-first virtual keyboard
-for KDE Wayland Desktop Mode. It combines a permanent alphabet board with a
+Imboard, short for Input Method Board, is a virtual keyboard for KDE Wayland
+desktops. It combines a permanent alphabet board with a
 swipeable developer pad for numbers, symbols, navigation, function keys,
 shortcuts, and user-defined key actions.
 
-Imboard exists because desktop work on the Steam Deck often needs keys that are
-awkward to access consistently on compact on-screen keyboards: pipes, braces,
-arrows, function keys, lock keys, and application shortcuts. The built-in Steam
-keyboard is useful for normal text entry; Imboard is aimed at scripting,
-editing, terminal work, and other developer-heavy desktop tasks.
+Imboard exists because desktop work on touch-first KDE Wayland systems often
+needs keys that are awkward to access consistently on compact on-screen
+keyboards: pipes, braces, arrows, function keys, lock keys, and application
+shortcuts. It is aimed at scripting, editing, terminal work, and other
+developer-heavy desktop tasks.
 
 ## Status
 
@@ -21,9 +21,9 @@ for later sessions. Imboard remains input-inert until that setup succeeds.
 KWin virtual-keyboard registration remains excluded from normal build and
 install paths because Imboard uses layer-shell and desktop portals instead.
 
-SteamOS Desktop Mode on KDE Wayland is the primary target. Fedora KDE Wayland is
-also validated as a current KDE desktop environment. Other KDE Wayland desktops
-may work if they support layer-shell and the XDG Remote Desktop portal.
+KDE Wayland is the supported target environment. The current release has been
+validated on SteamOS Desktop Mode and Fedora KDE Wayland. Other KDE Wayland
+desktops may work if they support layer-shell and the XDG Remote Desktop portal.
 
 ## Screenshots
 
@@ -39,11 +39,11 @@ Demo video: [IMBOARD 0.2.0 walkthrough](docs/videos/imboard-demo-0.2.0.webm)
 
 ## Product constraints
 
-- Native Wayland and designed for the Steam Deck's 1280x800 display.
+- Native Wayland and designed for small touch-first KDE desktop displays.
 - One compositor-managed transparent surface containing two visual panels.
 - A fixed alphabet board and a horizontally swipeable developer pad.
 - Configurable actions are data, not shell commands.
-- SteamOS Desktop Mode and KDE Wayland are the supported target environment.
+- KDE Wayland is the supported target environment.
 - Gamescope/Gaming Mode and non-KDE desktops are outside the current project
   scope.
 
@@ -123,8 +123,8 @@ current component ownership and runtime flow are documented in
 
 ## Maintenance and support
 
-Imboard is a spare-time project. Bug reports, focused pull requests, and SteamOS
-Desktop Mode test results are welcome. If Imboard saves you time and you want to
+Imboard is a spare-time project. Bug reports, focused pull requests, and KDE
+Wayland test results are welcome. If Imboard saves you time and you want to
 support the work, Ko-fi donations are welcome at
 <https://ko-fi.com/anicetuscer>.
 

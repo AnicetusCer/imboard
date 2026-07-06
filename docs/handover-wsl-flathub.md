@@ -10,18 +10,17 @@ especially a Windows laptop using WSL and the Fedora KDE Wayland test system.
 - Repository: `https://github.com/AnicetusCer/imboard`
 - App ID: `io.github.anicetuscer.imboard`
 - Current release target: `0.2.0`
-- Primary tested target: SteamOS Desktop Mode on KDE Wayland
-- Secondary validated target: Fedora KDE Wayland on the Windows test system
+- Supported target: KDE Wayland
+- Validated targets: SteamOS Desktop Mode and Fedora KDE Wayland
 - Intended package route: Flatpak, preferably Flathub rather than ad-hoc tester
   bundles
 - Current `main` has been pushed from the Steam Deck development environment
 
-Imboard is a Steam Deck-first virtual keyboard for KDE Wayland Desktop Mode. It
-is intended to help users who need regular desktop/developer keys on the Steam
-Deck: symbols, arrows, function keys, lock keys, shortcuts, and configurable
-custom keys. SteamOS Desktop Mode and KDE Wayland are the supported target
-environment. Fedora KDE Wayland has also been validated as a current KDE
-desktop. Gamescope/Gaming Mode and non-KDE desktops are outside the current
+Imboard is a virtual keyboard for KDE Wayland desktops. It is intended to help
+users who need regular desktop/developer keys on compact on-screen keyboards:
+symbols, arrows, function keys, lock keys, shortcuts, and configurable custom
+keys. The current release has been validated on SteamOS Desktop Mode and Fedora
+KDE Wayland. Gamescope/Gaming Mode and non-KDE desktops are outside the current
 project scope.
 
 ## Important design constraints
@@ -111,9 +110,8 @@ then do runtime validation on SteamOS/KDE Wayland.
 
 A Fedora KDE Wayland system has been set up on the Windows machine for build,
 Flatpak, portal, tray, and general KDE Wayland validation. It is the preferred
-non-SteamOS test environment. Final release confidence still requires the Steam
-Deck Desktop Mode checklist because SteamOS Desktop Mode remains the primary
-target.
+non-SteamOS test environment. SteamOS Desktop Mode remains an important
+validated environment because it is one of the original use cases.
 
 Pull the current repo there:
 
@@ -234,8 +232,7 @@ project goals change and it has been explicitly tested.
 
 ## Known caveats
 
-- SteamOS Desktop Mode on KDE Wayland is the primary tested target.
-- Fedora KDE Wayland has also been validated.
+- SteamOS Desktop Mode and Fedora KDE Wayland have been validated.
 - Non-KDE Wayland desktops are outside the supported target scope.
 - Gamescope/Gaming Mode is outside the supported target scope.
 - Emoji/non-ASCII input is experimental and app-dependent.

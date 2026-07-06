@@ -10,8 +10,9 @@ not change Imboard runtime behavior.
   URLs. Follow `docs/public-release-audit.md` before changing visibility.
 - `v0.2.0` is tagged on the clean public-facing release commit. Confirm it is
   reachable after switching the repository public.
-- `0.2.0` is scoped to KDE Wayland and SteamOS Desktop Mode. Gamescope/Gaming
-  Mode and non-KDE desktops are not supported targets.
+- `0.2.0` is scoped to KDE Wayland. It has been tested on SteamOS Desktop Mode
+  and Fedora KDE Wayland. Gamescope/Gaming Mode and non-KDE desktops are not
+  supported targets.
 - Re-run the SteamOS Desktop Mode release checklist after every packaging
   review change that could affect installation, metadata, permissions, or
   launch behavior.
@@ -81,8 +82,8 @@ flatpak run --command=flatpak-builder-lint org.flatpak.Builder repo repo
    `Add io.github.anicetuscer.imboard`.
 6. In review, be ready to explain:
    - Imboard is a layer-shell client, not a KWin virtual-keyboard plugin.
-   - Imboard is designed and tested for KDE Wayland, especially SteamOS
-     Desktop Mode, with Fedora KDE Wayland also validated.
+  - Imboard is designed and tested for KDE Wayland, with SteamOS Desktop Mode
+    and Fedora KDE Wayland validated for this release.
    - The app requests the Remote Desktop portal with keyboard capability only.
    - Static sandbox permissions are limited to Wayland, fallback X11, IPC, DRI,
      and KDE status notifier DBus access.

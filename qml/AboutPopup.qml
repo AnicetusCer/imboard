@@ -74,7 +74,7 @@ Popup {
 
             Label {
                 width: aboutTextScroll.availableWidth
-                text: "IMBOARD is a handy virtual keyboard built mainly for the Steam Deck. It is designed to make developer keys and shortcuts easier to reach without plugging in a physical keyboard.\n\nIt gives quick access to common keys that are awkward or missing on the built-in SteamOS virtual keyboard. SteamOS is its first home, but IMBOARD is designed to work across other Wayland-based KDE Linux desktops too.\n\nThis is a one-person project by me, AnicetusCer. Feedback is welcome through the GitHub support page, or through Ko-fi if you leave a tip and message there, but please do not expect instant replies.\n\nIf IMBOARD has helped you, consider leaving a tip through the Ko-fi link below. More than anything, it lets me know people are using it out there in the wild, which can be hard to tell while the app is private."
+                text: "IMBOARD is a handy virtual keyboard for KDE Wayland desktops. It is designed to make developer keys and shortcuts easier to reach without plugging in a physical keyboard.\n\nIt gives quick access to common keys that are awkward or missing on compact on-screen keyboards. The current release has been tested on SteamOS Desktop Mode and Fedora KDE Wayland.\n\nThis is a one-person project by me, AnicetusCer. Feedback is welcome through the GitHub support page, or through Ko-fi if you leave a tip and message there, but please do not expect instant replies.\n\nIf IMBOARD has helped you, consider leaving a tip through the Ko-fi link below. More than anything, it lets me know people are using it out there in the wild."
                 color: "#eaffff"
                 font.pixelSize: 11
                 wrapMode: Text.WordWrap

@@ -7,12 +7,12 @@
   <metadata_license>CC0-1.0</metadata_license>
   <project_license>GPL-3.0-or-later AND CC-BY-4.0</project_license>
   <name>Imboard</name>
-  <summary>Developer-focused Wayland keyboard for SteamOS Desktop Mode</summary>
+  <summary>Developer-focused virtual keyboard for KDE Wayland</summary>
 
   <description>
     <p>
-      Imboard, short for Input Method Board, is a Steam Deck-first virtual
-      keyboard for KDE Wayland Desktop Mode. It is designed for desktop tasks
+      Imboard, short for Input Method Board, is a virtual keyboard for KDE
+      Wayland desktops. It is designed for desktop tasks
       where compact on-screen keyboards make developer keys awkward: symbols,
       arrows, function keys, lock keys, shortcuts, and custom actions.
     </p>
@@ -27,9 +27,10 @@
       host filesystem access, or network access.
     </p>
     <p>
-      The supported target is KDE Wayland, especially SteamOS Desktop Mode.
-      Fedora KDE Wayland is also validated. Gamescope/Gaming Mode and non-KDE
-      desktops are outside the current project scope.
+      The supported target is KDE Wayland. The current release has been
+      validated on SteamOS Desktop Mode and Fedora KDE Wayland.
+      Gamescope/Gaming Mode and non-KDE desktops are outside the current
+      project scope.
     </p>
   </description>
 
@@ -71,7 +72,7 @@
     <release version="0.2.0" date="2026-07-06">
       <description>
         <p>
-          Initial release for SteamOS Desktop Mode and KDE Wayland, with
+          Initial release for KDE Wayland, with
           physical-key-style modifier behavior for layout-matched typing and
           Shift-lock selection.
         </p>

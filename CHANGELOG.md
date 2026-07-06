@@ -2,7 +2,7 @@
 
 ## 0.2.0 - 2026-07-06
 
-Initial release for SteamOS Desktop Mode and KDE Wayland.
+Initial release for KDE Wayland.
 
 ### Added
 
@@ -37,8 +37,7 @@ Initial release for SteamOS Desktop Mode and KDE Wayland.
 
 ### Known limitations
 
-- SteamOS Desktop Mode on KDE Wayland is the primary tested target.
-- Fedora KDE Wayland has also been validated.
+- Tested on SteamOS Desktop Mode and Fedora KDE Wayland.
 - Gamescope/Gaming Mode support is not targeted.
 - Emoji and non-ASCII input are experimental and may not work in every app.
 - Non-KDE Wayland desktops are not supported targets.

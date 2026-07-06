@@ -53,7 +53,7 @@ Popup {
         Label {
             Layout.fillWidth: true
             Layout.fillHeight: true
-            text: "IMBOARD is designed and tested for KDE Wayland, including SteamOS Desktop Mode.\n\n"
+            text: "IMBOARD is designed and tested for KDE Wayland.\n\n"
                   + "This session does not appear to be KDE, so some features may not work correctly."
             color: "#eaffff"
             font.pixelSize: 11
