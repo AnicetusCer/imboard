@@ -27,6 +27,8 @@ may work if they support layer-shell and the XDG Remote Desktop portal.
 
 ## Screenshots
 
+Demo video: [IMBOARD 0.2.0 walkthrough](docs/videos/imboard-demo-0.2.0.webm)
+
 ![Imboard with function-key developer pad](docs/screenshots/imboard-main-fkeys.png)
 
 ![Imboard custom-key pad on the left](docs/screenshots/imboard-custom-pad.png)
