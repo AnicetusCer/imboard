@@ -1,0 +1,11 @@
+# SPDX-FileCopyrightText: 2026 AnicetusCer
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+[Desktop Entry]
+Name=Imboard
+Comment=Developer-focused Wayland virtual keyboard
+Exec=imboard --toggle
+Icon=io.github.anicetuscer.imboard
+Type=Application
+Categories=Utility;Accessibility;
+NoDisplay=false

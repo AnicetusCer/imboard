@@ -1,0 +1,35 @@
+# SPDX-FileCopyrightText: 2026 AnicetusCer
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+id: io.github.anicetuscer.imboard
+runtime: org.kde.Platform
+runtime-version: "6.10"
+sdk: org.kde.Sdk
+command: imboard
+
+finish-args:
+  - --share=ipc
+  - --socket=wayland
+  - --device=dri
+  - --talk-name=org.kde.StatusNotifierWatcher
+
+modules:
+  - name: layer-shell-qt
+    buildsystem: cmake-ninja
+    config-opts:
+      - -DBUILD_TESTING=OFF
+      - -DCMAKE_BUILD_TYPE=Release
+    sources:
+      - type: git
+        url: https://invent.kde.org/plasma/layer-shell-qt.git
+        commit: 76fbe5deb9d9545be98d1900b5d0df868616759e
+
+  - name: imboard
+    buildsystem: cmake-ninja
+    config-opts:
+      - -DBUILD_TESTING=OFF
+      - -DCMAKE_BUILD_TYPE=Release
+    sources:
+      - type: git
+        url: https://github.com/AnicetusCer/imboard.git
+        tag: v0.1.0

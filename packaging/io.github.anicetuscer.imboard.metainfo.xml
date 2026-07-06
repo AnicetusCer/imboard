@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- SPDX-FileCopyrightText: 2026 AnicetusCer -->
+<!-- SPDX-License-Identifier: CC0-1.0 -->
+
+<component type="desktop-application">
+  <id>io.github.anicetuscer.imboard</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>GPL-3.0-or-later AND CC-BY-4.0</project_license>
+  <name>Imboard</name>
+  <summary>Developer-focused Wayland keyboard for SteamOS Desktop Mode</summary>
+
+  <description>
+    <p>
+      Imboard, short for Input Method Board, is a Steam Deck-first virtual
+      keyboard for KDE Wayland Desktop Mode. It is designed for desktop tasks
+      where compact on-screen keyboards make developer keys awkward: symbols,
+      arrows, function keys, lock keys, shortcuts, and custom actions.
+    </p>
+    <p>
+      Imboard combines a transparent alphabet board with a swipeable developer
+      pad for numbers, symbols, navigation, function keys, shortcuts, and
+      user-defined key actions.
+    </p>
+    <p>
+      Imboard uses the standard XDG Remote Desktop portal to request
+      keyboard-only control. It does not request screen sharing, pointer control,
+      host filesystem access, or network access.
+    </p>
+    <p>
+      The supported target is KDE Wayland, especially SteamOS Desktop Mode.
+      Fedora KDE Wayland is also validated. Gamescope/Gaming Mode and non-KDE
+      desktops are outside the current project scope.
+    </p>
+  </description>
+
+  <launchable type="desktop-id">io.github.anicetuscer.imboard.desktop</launchable>
+  <developer id="io.github.anicetuscer">
+    <name>AnicetusCer</name>
+  </developer>
+  <url type="homepage">https://github.com/AnicetusCer/imboard</url>
+  <url type="bugtracker">https://github.com/AnicetusCer/imboard/issues</url>
+  <url type="vcs-browser">https://github.com/AnicetusCer/imboard</url>
+  <url type="donation">https://ko-fi.com/anicetuscer</url>
+
+  <branding>
+    <color type="primary" scheme_preference="dark">#48f3ff</color>
+  </branding>
+
+  <screenshots>
+    <screenshot type="default">
+      <caption>Main keyboard with function-key developer pad</caption>
+      <image>https://raw.githubusercontent.com/AnicetusCer/imboard/main/docs/screenshots/imboard-main-fkeys.png</image>
+    </screenshot>
+    <screenshot>
+      <caption>Custom-key developer pad</caption>
+      <image>https://raw.githubusercontent.com/AnicetusCer/imboard/main/docs/screenshots/imboard-custom-pad.png</image>
+    </screenshot>
+    <screenshot>
+      <caption>Appearance settings</caption>
+      <image>https://raw.githubusercontent.com/AnicetusCer/imboard/main/docs/screenshots/imboard-appearance-settings.png</image>
+    </screenshot>
+    <screenshot>
+      <caption>Transparent overlay while typing in an editor</caption>
+      <image>https://raw.githubusercontent.com/AnicetusCer/imboard/main/docs/screenshots/imboard-transparent-overlay.png</image>
+    </screenshot>
+  </screenshots>
+
+  <content_rating type="oars-1.1" />
+
+  <releases>
+    <release version="0.1.0" date="2026-07-06">
+      <description>
+        <p>
+          Initial release for SteamOS Desktop Mode and KDE Wayland.
+        </p>
+      </description>
+    </release>
+  </releases>
+
+  <provides>
+    <binary>imboard</binary>
+  </provides>
+</component>

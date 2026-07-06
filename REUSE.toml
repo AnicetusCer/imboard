@@ -1,0 +1,31 @@
+# SPDX-FileCopyrightText: 2026 AnicetusCer
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+version = 1
+
+[[annotations]]
+path = [
+    ".editorconfig",
+    ".gitignore",
+    ".qmllint.ini",
+    "AGENTS.md",
+    "CHANGELOG.md",
+    "PRIVACY.md",
+    "README.md",
+    "SUPPORT.md",
+    "TRADEMARKS.md",
+    "docs/**",
+    "layouts/*.json",
+]
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2026 AnicetusCer"
+SPDX-License-Identifier = "GPL-3.0-or-later"
+
+[[annotations]]
+path = [
+    "assets/twemoji/*.png",
+    "assets/twemoji/*.svg",
+]
+precedence = "aggregate"
+SPDX-FileCopyrightText = "Copyright 2020 Twitter, Inc and other contributors"
+SPDX-License-Identifier = "CC-BY-4.0"

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- SPDX-FileCopyrightText: 2026 AnicetusCer -->
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
+  <defs>
+    <linearGradient id="frame" x1="24" y1="20" x2="232" y2="236" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#48f3ff"/>
+      <stop offset="1" stop-color="#ef64ff"/>
+    </linearGradient>
+    <filter id="glow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="4" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <rect x="14" y="22" width="228" height="212" rx="34" fill="#08101f" stroke="url(#frame)" stroke-width="8"/>
+  <rect x="25" y="33" width="206" height="190" rx="24" fill="none" stroke="#48f3ff" stroke-opacity=".55" stroke-width="3"/>
+  <g fill="none" stroke="#48f3ff" stroke-width="7" filter="url(#glow)">
+    <rect x="45" y="66" width="34" height="30" rx="6"/>
+    <rect x="91" y="66" width="34" height="30" rx="6"/>
+    <rect x="137" y="66" width="34" height="30" rx="6"/>
+    <rect x="183" y="66" width="28" height="30" rx="6"/>
+    <rect x="45" y="109" width="28" height="30" rx="6"/>
+    <rect x="85" y="109" width="34" height="30" rx="6"/>
+    <rect x="131" y="109" width="34" height="30" rx="6"/>
+    <rect x="177" y="109" width="34" height="30" rx="6"/>
+  </g>
+  <g fill="none" stroke="#ef64ff" stroke-width="7" filter="url(#glow)">
+    <rect x="45" y="152" width="38" height="30" rx="6"/>
+    <rect x="95" y="152" width="116" height="30" rx="6"/>
+  </g>
+</svg>

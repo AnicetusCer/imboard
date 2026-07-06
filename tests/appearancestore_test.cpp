@@ -1,0 +1,52 @@
+// SPDX-FileCopyrightText: 2026 AnicetusCer
+// SPDX-License-Identifier: GPL-3.0-or-later
+
+#include "appearancestore.h"
+
+#include <QSettings>
+#include <QTest>
+
+class AppearanceStoreTest final : public QObject
+{
+    Q_OBJECT
+
+private slots:
+    void initTestCase()
+    {
+        QCoreApplication::setOrganizationName(QStringLiteral("ImboardTests"));
+        QCoreApplication::setApplicationName(QStringLiteral("AppearanceStore"));
+        QSettings().clear();
+    }
+
+    void validatesAndPersistsAppearance()
+    {
+        AppearanceStore initial;
+        QCOMPARE(initial.scheme(), QStringLiteral("cyber"));
+        QCOMPARE(initial.backdropOpacity(), 0.5);
+        QVERIFY(!initial.developerPadOnLeft());
+        QVERIFY(initial.frameBordersVisible());
+        QVERIFY(initial.keyBordersVisible());
+        QVERIFY(!initial.selectScheme(QStringLiteral("unknown")));
+        QVERIFY(initial.selectScheme(QStringLiteral("red")));
+        QCOMPARE(initial.primary(), QColor(QStringLiteral("#ff3b4f")));
+        QVERIFY(initial.selectScheme(QStringLiteral("matrix")));
+        QCOMPARE(initial.primary(), QColor(QStringLiteral("#65ff70")));
+        initial.setBackdropOpacity(0.42);
+        initial.toggleDeveloperPadSide();
+        initial.toggleFrameBorders();
+        initial.toggleKeyBorders();
+
+        AppearanceStore reloaded;
+        QCOMPARE(reloaded.scheme(), QStringLiteral("matrix"));
+        QCOMPARE(reloaded.backdropOpacity(), 0.42);
+        QVERIFY(reloaded.developerPadOnLeft());
+        QVERIFY(!reloaded.frameBordersVisible());
+        QVERIFY(!reloaded.keyBordersVisible());
+        reloaded.setBackdropOpacity(4.0);
+        QCOMPARE(reloaded.backdropOpacity(), 1.0);
+    }
+};
+
+QTEST_GUILESS_MAIN(AppearanceStoreTest)
+
+#include "appearancestore_test.moc"
