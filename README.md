@@ -27,9 +27,9 @@ desktops may work if they support layer-shell and the XDG Remote Desktop portal.
 
 ## Demo
 
-<video src="docs/videos/imboard-demo-0.2.0.webm" controls width="720"></video>
+![IMBOARD 0.2.0 walkthrough](docs/videos/imboard-demo-0.2.0.gif)
 
-Demo video: [IMBOARD 0.2.0 walkthrough](docs/videos/imboard-demo-0.2.0.webm)
+Higher-quality video: [IMBOARD 0.2.0 walkthrough](docs/videos/imboard-demo-0.2.0.webm)
 
 ## Install
 
