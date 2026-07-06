@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.1.0 - 2026-07-06
+## 0.2.0 - 2026-07-06
 
 Initial release for SteamOS Desktop Mode and KDE Wayland.
 
@@ -8,6 +8,8 @@ Initial release for SteamOS Desktop Mode and KDE Wayland.
 
 - Transparent, movable, resizable Wayland keyboard surface for KDE Desktop Mode.
 - Main alphabet keyboard with US and GB layout choices.
+- Physical-key-style Shift and Caps behavior for layout-matched typing.
+- Long-press Shift lock for selection with arrows and navigation keys.
 - Swipeable developer pad pages for:
   - numbers and navigation;
   - scripting symbols;

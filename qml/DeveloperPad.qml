@@ -441,19 +441,15 @@ Item {
         return "nav"
     }
 
-    function repeatableKey(value) {
-        return ["Backspace", "Delete", "Left", "Right", "Up", "Down",
-                "Home", "End", "PageUp", "PageDown"].indexOf(value) >= 0
-    }
-
     function repeatableAction(action) {
-        return action[1] === "key" && repeatableKey(action[2])
-               && !modifierSource.anyModifierActive()
+        return action[1] === "key" && modifierSource.repeatableKey(action[2])
+               && !modifierSource.repeatBlockingModifierActive()
     }
 
     function repeatableAssignment(assignment) {
-        return assignment && assignment.type === "key" && repeatableKey(assignment.value)
-               && !modifierSource.anyModifierActive()
+        return assignment && assignment.type === "key"
+               && modifierSource.repeatableKey(assignment.value)
+               && !modifierSource.repeatBlockingModifierActive()
     }
 
     function activeKeyModifiers() {

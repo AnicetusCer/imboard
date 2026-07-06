@@ -5,7 +5,7 @@ This records the final checks for publishing `AnicetusCer/imboard`.
 ## Current state
 
 - Public-facing history has been reduced to one initial release commit.
-- The `v0.1.0` tag points at that clean release commit.
+- The `v0.2.0` tag points at the current release commit.
 - Commit author, committer, and tagger use:
   `AnicetusCer <dev.acer.certified955@passmail.net>`.
 - Generated build directories are not tracked.

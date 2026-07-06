@@ -30,8 +30,8 @@ Item {
         return false
     }
 
-    function anyModifierActive() {
-        return shifted || controlHeld || altHeld || metaHeld
+    function repeatBlockingModifierActive() {
+        return controlHeld || altHeld || metaHeld
     }
 
     function repeatableKey(value) {
@@ -100,7 +100,7 @@ Item {
     function activate(key) {
         if (key.value === "Shift" && shiftLongPressConsumed) {
             shiftLongPressConsumed = false
-            if (!shiftLocked) return
+            return
         }
         if (key.type === "modifier") {
             toggleModifier(key.value)
@@ -142,7 +142,7 @@ Item {
                                   ? "LOCK" : ""
                         repeatEnabled: modelData.type === "key"
                                        && root.repeatableKey(modelData.value)
-                                       && !root.anyModifierActive()
+                                       && !root.repeatBlockingModifierActive()
                         toolTipText: modelData.shiftedLabel && !root.shifted
                                      ? "Shift: " + modelData.shiftedLabel : ""
                         accent: modelData.type === "lock" && root.capsLocked

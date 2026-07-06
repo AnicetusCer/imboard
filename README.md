@@ -13,7 +13,7 @@ editing, terminal work, and other developer-heavy desktop tasks.
 
 ## Status
 
-Current release target: `0.1.0`.
+Current release target: `0.2.0`.
 
 Imboard presents required keyboard-access setup on first visible launch. The
 standard desktop portal grants keyboard-only control and returns a restore token

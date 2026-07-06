@@ -24,7 +24,7 @@ Button {
     font.pixelSize: compact ? 9 : Math.max(12, Math.min(18, height * 0.22))
     font.weight: Font.Medium
     hoverEnabled: true
-    autoRepeat: repeatEnabled
+    autoRepeat: false
     autoRepeatDelay: 520
     autoRepeatInterval: 125
 
@@ -38,6 +38,7 @@ Button {
     }
 
     function startManualRepeat() {
+        if (manualRepeatActive) return
         manualRepeatActive = true
         repeatStartTimer.stop()
         repeatTimer.restart()
