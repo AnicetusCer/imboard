@@ -39,3 +39,4 @@ modules:
           - build*
           - flatpak-build
           - flatpak-repo
+          - "*.flatpak"

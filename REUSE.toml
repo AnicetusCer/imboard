@@ -12,6 +12,7 @@ path = [
     "CHANGELOG.md",
     "PRIVACY.md",
     "README.md",
+    "SECURITY.md",
     "SUPPORT.md",
     "TRADEMARKS.md",
     "docs/**",

@@ -2,6 +2,7 @@ build*/
 .flatpak-builder/
 flatpak-build/
 flatpak-repo/
+*.flatpak
 .cache/
 .idea/
 .vscode/

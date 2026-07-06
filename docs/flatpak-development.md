@@ -11,8 +11,7 @@ Install the build tools and matching SDK from Flathub, then build and install:
 
 ```sh
 flatpak install --user flathub org.kde.Sdk//6.10
-flatpak-builder --user --install --force-clean flatpak-build \
-    packaging/io.github.anicetuscer.imboard.yml
+sh ./scripts/install-user-flatpak.sh
 ```
 
 Launch or toggle the installed development build:
@@ -31,3 +30,9 @@ In the Flatpak, `RUN AT LOGIN` requests autostart through the XDG Background
 portal. When enabled, Imboard launches after login with the keyboard hidden and
 the system-tray icon available for show/hide. Native development builds continue
 to manage their own autostart desktop file.
+
+To create a local `.flatpak` bundle suitable for attaching to a GitHub release:
+
+```sh
+sh ./scripts/build-release-bundle.sh
+```

@@ -25,9 +25,131 @@ KDE Wayland is the supported target environment. The current release has been
 validated on SteamOS Desktop Mode and Fedora KDE Wayland. Other KDE Wayland
 desktops may work if they support layer-shell and the XDG Remote Desktop portal.
 
-## Screenshots
+## Demo
+
+<video src="docs/videos/imboard-demo-0.2.0.webm" controls width="720"></video>
 
 Demo video: [IMBOARD 0.2.0 walkthrough](docs/videos/imboard-demo-0.2.0.webm)
+
+## Install
+
+IMBOARD is distributed from GitHub releases. I originally intended to publish it
+on Flathub, but Flathub's current policy says AI-generated or AI-assisted
+applications are not accepted. Rather than ask their reviewers to spend time on
+a submission they are likely to reject on policy grounds, IMBOARD is published
+here for people who are comfortable installing software outside an app store.
+
+### From A Release Bundle
+
+The easiest install path is the `.flatpak` bundle attached to a GitHub release.
+It installs into your user account.
+
+1. Install Flatpak with your distro package manager.
+
+   Fedora:
+
+   ```sh
+   sudo dnf install flatpak
+   ```
+
+   SteamOS / Arch-like systems usually include Flatpak already. On Arch-like
+   systems where it is missing:
+
+   ```sh
+   sudo pacman -S flatpak
+   ```
+
+2. Download `imboard-0.2.0-x86_64.flatpak` from the GitHub release.
+
+3. Install it:
+
+   ```sh
+   flatpak install --user ./imboard-0.2.0-x86_64.flatpak
+   ```
+
+4. Launch IMBOARD from the KDE app launcher, or run:
+
+   ```sh
+   flatpak run io.github.anicetuscer.imboard --toggle
+   ```
+
+The release bundle is currently built for `x86_64`. Users on other
+architectures can build from source.
+
+### Build And Install From Source
+
+This path builds a local user Flatpak from a release source checkout. It does
+not need root once Flatpak and `flatpak-builder` are installed.
+
+1. Install Flatpak tooling with your distro package manager.
+
+   Fedora:
+
+   ```sh
+   sudo dnf install flatpak flatpak-builder
+   ```
+
+   Arch-like systems:
+
+   ```sh
+   sudo pacman -S flatpak flatpak-builder
+   ```
+
+2. Download a GitHub release source archive, unpack it, and enter the source
+   directory. Alternatively, clone the repository and check out the release tag:
+
+   ```sh
+   git clone https://github.com/AnicetusCer/imboard.git
+   cd imboard
+   git checkout v0.2.0
+   ```
+
+3. Build and install the user Flatpak:
+
+   ```sh
+   sh ./scripts/install-user-flatpak.sh
+   ```
+
+4. Launch IMBOARD from the KDE app launcher, or run:
+
+   ```sh
+   flatpak run io.github.anicetuscer.imboard --toggle
+   ```
+
+### Uninstall
+
+Before uninstalling, open IMBOARD's CONFIG panel and use `FORGET ACCESS` if you
+want to remove the saved keyboard portal permission cleanly.
+
+Then run:
+
+```sh
+sh ./scripts/uninstall-user-flatpak.sh
+```
+
+Or uninstall manually:
+
+```sh
+flatpak run io.github.anicetuscer.imboard --quit
+flatpak uninstall --user --delete-data io.github.anicetuscer.imboard
+```
+
+## Security And Permissions
+
+IMBOARD is not signed by a third-party certificate authority and does not have a
+third-party security certificate. The trust model is public source, tagged
+GitHub releases, local Flatpak builds, documented permissions, and reproducible
+validation checks.
+
+The Flatpak does not request network, host filesystem, pointer, touchscreen,
+screencast, camera, microphone, or location access. Keyboard events are sent
+through the user-approved XDG Remote Desktop portal with keyboard capability.
+The portal permission is powerful, so IMBOARD stays input-inert until setup
+succeeds and provides a `FORGET ACCESS` flow in CONFIG.
+
+For details, see [Security](SECURITY.md).
+
+## Screenshots
 
 ![Imboard with function-key developer pad](docs/screenshots/imboard-main-fkeys.png)
 
@@ -56,7 +178,7 @@ Demo video: [IMBOARD 0.2.0 walkthrough](docs/videos/imboard-demo-0.2.0.webm)
 5. Common chords
 6. User-assigned text, keys, or chords
 
-## Build
+## Native Development Build
 
 Imboard requires CMake 3.21+, Qt 6.4+ with Qt Quick and Qt DBus, and Ninja.
 
