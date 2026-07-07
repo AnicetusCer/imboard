@@ -1,20 +1,24 @@
-# Imboard WSL and Flathub handover
+# Imboard Fedora/Flatpak handover
 
-Date: 2026-07-06
+Date: 2026-07-07
 
 This document is for continuing Imboard development from a new machine/session,
-especially a Windows laptop using WSL and the Fedora KDE Wayland test system.
+especially a Fedora KDE Wayland VM or workstation. It is intentionally safe to
+keep public in the repository.
 
 ## Current project state
 
 - Repository: `https://github.com/AnicetusCer/imboard`
 - App ID: `io.github.anicetuscer.imboard`
 - Current release target: `0.2.1`
+- Latest GitHub release: `v0.2.1`
 - Supported target: KDE Wayland
 - Validated targets: SteamOS Desktop Mode and Fedora KDE Wayland
 - Intended package route: Flatpak, preferably Flathub rather than ad-hoc tester
   bundles
-- Current `main` has been pushed from the Steam Deck development environment
+- Current `main` and tag `v0.2.1` have been pushed.
+- The GitHub release `IMBOARD 0.2.1` has been published with the
+  `imboard-0.2.1-x86_64.flatpak` bundle.
 
 Imboard is a virtual keyboard for KDE Wayland desktops. It is intended to help
 users who need regular desktop/developer keys on compact on-screen keyboards:
@@ -61,6 +65,7 @@ Read these docs before changing behavior:
 - Flatpak manifest builds locally.
 - Flathub submission path documented in `docs/flathub-submission.md`.
 - Public-release safety notes documented in `docs/public-release-audit.md`.
+- GitHub release `v0.2.1` created and marked latest.
 - Security polish pass completed:
   - fallback X11 socket included only for Flathub's native-Wayland packaging
     rule;
@@ -103,15 +108,16 @@ Layer-shell support may require distro-specific packages or building
 dependency, so native WSL builds are mainly for compile/test/doc work.
 
 WSL may not provide a useful Wayland compositor, tray, or desktop portal
-environment for runtime testing. Treat WSL as a build/release-prep environment,
-then do runtime validation on SteamOS/KDE Wayland.
+environment for runtime testing. Treat WSL as a source-check and packaging-prep
+environment, then do runtime validation on Fedora KDE Wayland or SteamOS Desktop
+Mode.
 
 ## Fedora KDE test system
 
-A Fedora KDE Wayland system has been set up on the Windows machine for build,
-Flatpak, portal, tray, and general KDE Wayland validation. It is the preferred
-non-SteamOS test environment. SteamOS Desktop Mode remains an important
-validated environment because it is one of the original use cases.
+A Fedora KDE Wayland system is the preferred development and release-prep
+environment for build, Flatpak, portal, tray, and general KDE Wayland
+validation. SteamOS Desktop Mode remains an important validated environment
+because it is one of the original use cases.
 
 Pull the current repo there:
 
@@ -173,6 +179,45 @@ Manual Fedora KDE checks:
    - one configured custom key.
 9. Treat Gamescope/Gaming Mode as out of scope unless the project goals change.
 
+## Release bundle build path
+
+For a normal Fedora KDE development system, the preferred release-bundle command
+is:
+
+```sh
+sh ./scripts/build-release-bundle.sh
+```
+
+On SteamOS, building inside a Distrobox/container can fail before compiling the
+app with a nested Bubblewrap mount error involving `/etc/resolv.conf`:
+
+```text
+bwrap: Can't bind mount /oldroot/etc/resolv.conf on /newroot/etc/resolv.conf:
+Unable to mount source on destination: No such file or directory
+```
+
+This is an environment issue caused by running Flatpak Builder's sandbox inside
+another container. It is not an Imboard compile or packaging failure. Prefer a
+normal Fedora KDE environment for release builds. If a SteamOS build is needed,
+use the installed `org.flatpak.Builder` Flatpak instead of running
+`flatpak-builder` inside Distrobox:
+
+```sh
+flatpak run --filesystem="$PWD" org.flatpak.Builder \
+    --user --force-clean \
+    --repo="$PWD/flatpak-repo" \
+    "$PWD/flatpak-build" \
+    "$PWD/packaging/io.github.anicetuscer.imboard.yml"
+
+flatpak build-bundle \
+    --runtime-repo=https://dl.flathub.org/repo/flathub.flatpakrepo \
+    "$PWD/flatpak-repo" \
+    "$PWD/imboard-0.2.1-x86_64.flatpak" \
+    io.github.anicetuscer.imboard
+```
+
+The `v0.2.1` release bundle was built successfully with this fallback path.
+
 ## Validation commands
 
 Local source checks:
@@ -210,7 +255,7 @@ The next major workstream should be preparing a Flathub submission.
 Likely tasks:
 
 1. Make the GitHub repository public if it is not already public.
-   The public-facing history and `v0.2.1` tag should be prepared before release; see
+   The public-facing history and `v0.2.1` tag have been prepared; see
    `docs/public-release-audit.md`.
 2. Confirm the repository, issue tracker, AppStream URLs, and screenshot URLs
    work publicly.
@@ -220,7 +265,8 @@ Likely tasks:
    - screenshots are reachable;
    - no excessive sandbox permissions;
    - release metadata is present.
-4. Confirm `v0.2.1` is present before submitting.
+4. Confirm `v0.2.1` is present and the release asset is reachable before
+   submitting.
 5. Prepare the Flathub PR from the top-level
    `io.github.anicetuscer.imboard.yml` manifest.
 6. Confirm whether Flathub accepts the pinned `layer-shell-qt` build module as
@@ -249,6 +295,7 @@ Use this to restart work from another machine:
 We are continuing Imboard from https://github.com/AnicetusCer/imboard.
 Read AGENTS.md and docs/handover-wsl-flathub.md first.
 I have a Fedora KDE Wayland test system available.
-Goal: pull the current repo, validate the 0.2.1 Flathub/public-release
-path, and avoid runtime behavior changes unless required by packaging review.
+Goal: pull the current repo, validate the 0.2.1 GitHub release and
+Flathub/public-release path, and avoid runtime behavior changes unless required
+by packaging review.
 ```

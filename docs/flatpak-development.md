@@ -36,3 +36,10 @@ To create a local `.flatpak` bundle suitable for attaching to a GitHub release:
 ```sh
 sh ./scripts/build-release-bundle.sh
 ```
+
+If this is run inside a nested container such as Distrobox, Flatpak Builder may
+fail before compiling the app with a Bubblewrap `/etc/resolv.conf` bind-mount
+error. That is a build-environment issue, not an Imboard packaging failure. Use
+a normal Fedora KDE build environment where possible. On SteamOS, the installed
+`org.flatpak.Builder` Flatpak can be used as a fallback; see
+`docs/handover-wsl-flathub.md`.
