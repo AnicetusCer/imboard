@@ -3,7 +3,7 @@
 
 cmake_minimum_required(VERSION 3.21)
 
-project(imboard VERSION 0.2.0 LANGUAGES CXX)
+project(imboard VERSION 0.2.1 LANGUAGES CXX)
 
 include(CTest)
 
@@ -50,6 +50,7 @@ qt_add_qml_module(imboard
     URI Imboard
     VERSION 1.0
     NO_CACHEGEN
+    NO_IMPORT_SCAN
     QML_FILES
         qml/Main.qml
         qml/AlphaBoard.qml

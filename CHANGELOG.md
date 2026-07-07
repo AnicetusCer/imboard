@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.2.1 - 2026-07-07
+
+Patch release for startup and native-build polish.
+
+### Fixed
+
+- Removed repeated QML startup warnings caused by `DeveloperPad` bound component
+  instantiation through page loaders.
+- Disabled Qt QML import scanning for the app module to avoid Qt 6.4 native
+  build hangs in the Steam Deck development environment.
+- Adjusted main-board modifier helper code so QML lint passes cleanly with the
+  Qt 6.4 toolchain.
+
 ## 0.2.0 - 2026-07-06
 
 Initial release for KDE Wayland.

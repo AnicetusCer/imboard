@@ -35,8 +35,11 @@ Item {
     }
 
     function repeatableKey(value) {
-        return ["Backspace", "Delete", "Left", "Right", "Up", "Down",
-                "Home", "End", "PageUp", "PageDown"].indexOf(value) >= 0
+        return value === "Backspace" || value === "Delete"
+               || value === "Left" || value === "Right"
+               || value === "Up" || value === "Down"
+               || value === "Home" || value === "End"
+               || value === "PageUp" || value === "PageDown"
     }
 
     function toggleModifier(value) {
@@ -66,14 +69,14 @@ Item {
 
     function sendCharacter(key) {
         let value = key.value
-        const modifiers = activeCommandModifiers()
+        var modifiers = activeCommandModifiers()
         if (key.type === "letter") {
             const commandModifierHeld = modifiers.length > 0
             const upperCase = commandModifierHeld ? shifted : shifted !== capsLocked
-            if (upperCase) modifiers.push("Shift")
+            if (upperCase) modifiers = modifiers.concat(["Shift"])
             value = key.value.toLowerCase()
         } else if (shifted && key.shiftedValue) {
-            modifiers.push("Shift")
+            modifiers = modifiers.concat(["Shift"])
         }
 
         if (modifiers.length > 0) inputBackend.sendChord(modifiers, value)
@@ -82,16 +85,19 @@ Item {
     }
 
     function activeCommandModifiers() {
-        const modifiers = []
-        if (controlHeld) modifiers.push("Ctrl")
-        if (altHeld) modifiers.push("Alt")
-        if (metaHeld) modifiers.push("Meta")
-        return modifiers
+        if (controlHeld && altHeld && metaHeld) return ["Ctrl", "Alt", "Meta"]
+        if (controlHeld && altHeld) return ["Ctrl", "Alt"]
+        if (controlHeld && metaHeld) return ["Ctrl", "Meta"]
+        if (altHeld && metaHeld) return ["Alt", "Meta"]
+        if (controlHeld) return ["Ctrl"]
+        if (altHeld) return ["Alt"]
+        if (metaHeld) return ["Meta"]
+        return []
     }
 
     function sendSpecialKey(key) {
-        const modifiers = activeCommandModifiers()
-        if (shifted) modifiers.push("Shift")
+        var modifiers = activeCommandModifiers()
+        if (shifted) modifiers = modifiers.concat(["Shift"])
         if (modifiers.length > 0) inputBackend.sendChord(modifiers, key.value)
         else inputBackend.sendKey(key.value)
         clearOneShotShift()

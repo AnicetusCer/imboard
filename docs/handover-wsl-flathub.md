@@ -9,7 +9,7 @@ especially a Windows laptop using WSL and the Fedora KDE Wayland test system.
 
 - Repository: `https://github.com/AnicetusCer/imboard`
 - App ID: `io.github.anicetuscer.imboard`
-- Current release target: `0.2.0`
+- Current release target: `0.2.1`
 - Supported target: KDE Wayland
 - Validated targets: SteamOS Desktop Mode and Fedora KDE Wayland
 - Intended package route: Flatpak, preferably Flathub rather than ad-hoc tester
@@ -56,7 +56,7 @@ Read these docs before changing behavior:
 - Privacy documentation added.
 - AppStream metadata added and validated.
 - Screenshots copied into `docs/screenshots/`.
-- `CHANGELOG.md` added for `0.2.0`.
+- `CHANGELOG.md` added for `0.2.0` and updated for `0.2.1`.
 - README polished for public release presentation.
 - Flatpak manifest builds locally.
 - Flathub submission path documented in `docs/flathub-submission.md`.
@@ -210,7 +210,7 @@ The next major workstream should be preparing a Flathub submission.
 Likely tasks:
 
 1. Make the GitHub repository public if it is not already public.
-   The public-facing history and `v0.2.0` tag have already been prepared; see
+   The public-facing history and `v0.2.1` tag should be prepared before release; see
    `docs/public-release-audit.md`.
 2. Confirm the repository, issue tracker, AppStream URLs, and screenshot URLs
    work publicly.
@@ -220,7 +220,7 @@ Likely tasks:
    - screenshots are reachable;
    - no excessive sandbox permissions;
    - release metadata is present.
-4. Confirm `v0.2.0` is still present before submitting.
+4. Confirm `v0.2.1` is present before submitting.
 5. Prepare the Flathub PR from the top-level
    `io.github.anicetuscer.imboard.yml` manifest.
 6. Confirm whether Flathub accepts the pinned `layer-shell-qt` build module as
@@ -249,6 +249,6 @@ Use this to restart work from another machine:
 We are continuing Imboard from https://github.com/AnicetusCer/imboard.
 Read AGENTS.md and docs/handover-wsl-flathub.md first.
 I have a Fedora KDE Wayland test system available.
-Goal: pull the current repo, validate the 0.2.0 Flathub/public-release
+Goal: pull the current repo, validate the 0.2.1 Flathub/public-release
 path, and avoid runtime behavior changes unless required by packaging review.
 ```

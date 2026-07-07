@@ -1,6 +1,6 @@
 # Flathub submission path
 
-This tracks the packaging-only path for the `0.2.0` submission. It does
+This tracks the packaging-only path for the `0.2.1` submission. It does
 not change Imboard runtime behavior.
 
 ## Current gates
@@ -8,9 +8,9 @@ not change Imboard runtime behavior.
 - `AnicetusCer/imboard` is currently private. Make it public before submitting,
   because Flathub requires reachable source, metadata, screenshot, and issue
   URLs. Follow `docs/public-release-audit.md` before changing visibility.
-- `v0.2.0` is tagged on the clean public-facing release commit. Confirm it is
+- `v0.2.1` should be tagged on the clean public-facing release commit. Confirm it is
   reachable after switching the repository public.
-- `0.2.0` is scoped to KDE Wayland. It has been tested on SteamOS Desktop Mode
+- `0.2.1` is scoped to KDE Wayland. It has been tested on SteamOS Desktop Mode
   and Fedora KDE Wayland. Gamescope/Gaming Mode and non-KDE desktops are not
   supported targets.
 - Re-run the SteamOS Desktop Mode release checklist after every packaging
@@ -29,7 +29,7 @@ not change Imboard runtime behavior.
 ## Pre-submission checks
 
 The Flathub submission manifest build requires the repository to be public and
-the `v0.2.0` tag to exist on GitHub.
+the `v0.2.1` tag to exist on GitHub.
 
 From the upstream repo:
 
@@ -69,8 +69,8 @@ flatpak run --command=flatpak-builder-lint org.flatpak.Builder repo repo
 3. Tag the final release commit:
 
    ```sh
-   git tag -a v0.2.0 -m "Imboard 0.2.0"
-   git push origin v0.2.0
+   git tag -a v0.2.1 -m "Imboard 0.2.1"
+   git push origin v0.2.1
    ```
 
    If reviewers request an immutable source reference, add the tag's commit hash
