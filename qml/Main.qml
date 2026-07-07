@@ -17,6 +17,7 @@ Window {
     required property var surfaceController
     required property bool suppressInitialSetup
 
+    readonly property string appVersion: "0.2.2"
     property bool portalBusy: inputController.backendStatus.indexOf("Requesting") === 0
                               || inputController.backendStatus.indexOf("Waiting") === 0
 
@@ -155,6 +156,7 @@ Window {
         id: aboutPopup
         parent: Overlay.overlay
         appearanceStore: root.appearanceStore
+        appVersion: root.appVersion
     }
 
     CompatibilityWarningPopup {

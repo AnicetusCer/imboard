@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.2.2 - 2026-07-07
+
+Patch release for QML lint cleanup and release polish.
+
+### Fixed
+
+- Restored visible developer-pad keys after extracting page components for
+  cleaner QML scoping.
+- Removed remaining QML lint and Qt policy warnings from the Fedora build path.
+
+### Changed
+
+- Added the app version to the About popup footer.
+
 ## 0.2.1 - 2026-07-07
 
 Patch release for startup and native-build polish.

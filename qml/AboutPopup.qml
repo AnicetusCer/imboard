@@ -9,6 +9,7 @@ Popup {
     id: root
 
     required property var appearanceStore
+    required property string appVersion
 
     objectName: "aboutPopup"
     x: Math.round((parent.width - width) / 2)
@@ -121,7 +122,8 @@ Popup {
 
         Label {
             Layout.fillWidth: true
-            text: "GPL-3.0-or-later. Emoji artwork is Twemoji under CC BY 4.0."
+            text: "Version " + root.appVersion
+                  + " · GPL-3.0-or-later. Emoji artwork is Twemoji under CC BY 4.0."
             color: Qt.alpha("#eaffff", 0.78)
             font.pixelSize: 9
             elide: Text.ElideRight

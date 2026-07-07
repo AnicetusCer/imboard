@@ -13,7 +13,7 @@ developer-heavy desktop tasks.
 
 ## Status
 
-Current release target: `0.2.1`.
+Current release target: `0.2.2`.
 
 Imboard presents required keyboard-access setup on first visible launch. The
 standard desktop portal grants keyboard-only control and returns a restore token
@@ -59,12 +59,12 @@ It installs into your user account.
    sudo pacman -S flatpak
    ```
 
-2. Download `imboard-0.2.1-x86_64.flatpak` from the GitHub release.
+2. Download `imboard-0.2.2-x86_64.flatpak` from the GitHub release.
 
 3. Install it:
 
    ```sh
-   flatpak install --user ./imboard-0.2.1-x86_64.flatpak
+   flatpak install --user ./imboard-0.2.2-x86_64.flatpak
    ```
 
 4. Launch IMBOARD from the KDE app launcher, or run:
@@ -101,7 +101,7 @@ not need root once Flatpak and `flatpak-builder` are installed.
    ```sh
    git clone https://github.com/AnicetusCer/imboard.git
    cd imboard
-   git checkout v0.2.1
+   git checkout v0.2.2
    ```
 
 3. Build and install the user Flatpak:

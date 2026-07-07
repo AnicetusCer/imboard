@@ -16,6 +16,7 @@ Item {
     property bool editMode: false
     property bool pickerOpen: false
     property int selectedSlot: -1
+    property int currentPageIndex: 0
     property var draftAssignments: []
     property string pickerCategory: "all"
 
@@ -33,28 +34,28 @@ Item {
     ]
 
     readonly property var pages: [
-        { title: "NUM", keys: [
+        { title: "NUM", controller: root, keys: [
             ["7","text","7"], ["8","text","8"], ["9","text","9"], ["↑","key","Up"],
             ["4","text","4"], ["5","text","5"], ["6","text","6"], ["←","key","Left"],
             ["1","text","1"], ["2","text","2"], ["3","text","3"], ["→","key","Right"],
             ["0","text","0"], [".","text","."], ["Del","key","Delete"], ["↓","key","Down"] ] },
-        { title: "CODE", keys: [
+        { title: "CODE", controller: root, keys: [
             ["|","text","|"], ["\\","text","\\"], ["`","text","`"], ["~","text","~"],
             ["(","text","("], [")","text",")"], ["[","text","["], ["]","text","]"],
             ["{","text","{"], ["}","text","}"], ["<","text","<"], [">","text",">"],
             ["$","text","$"], ["#","text","#"], ["&","text","&"], [";","text",";"] ] },
-        { title: "MORE", keys: [
+        { title: "MORE", controller: root, keys: [
             ["@","text","@"], ["%","text","%"], ["^","text","^"], ["*","text","*"],
             ["+","text","+"], ["-","text","-"], ["=","text","="], ["_","text","_"],
             ["'","text","'"], ["\"","text","\""], [":","text",":"], ["!","text","!"],
             ["?","text","?"], ["/","text","/"], [",","text",","], [".","text","."] ] },
-        { title: "F-KEYS", keys: [
+        { title: "F-KEYS", controller: root, keys: [
             ["F1","key","F1"], ["F2","key","F2"], ["F3","key","F3"], ["F4","key","F4"],
             ["F5","key","F5"], ["F6","key","F6"], ["F7","key","F7"], ["F8","key","F8"],
             ["F9","key","F9"], ["F10","key","F10"], ["F11","key","F11"], ["F12","key","F12"],
             ["Esc","key","Escape"], ["Tab","key","Tab"], ["Home","key","Home"], ["End","key","End"],
             ["Caps","key","CapsLock"], ["Num","key","NumLock"], ["ScrLk","key","ScrollLock"], ["PrtSc","key","PrintScreen"] ] },
-        { title: "COMBOS", keys: [
+        { title: "COMBOS", controller: root, keys: [
             ["CPY","chord",["Ctrl"],"C","Copy — Ctrl+C"],
             ["PST","chord",["Ctrl"],"V","Paste — Ctrl+V"],
             ["CUT","chord",["Ctrl"],"X","Cut — Ctrl+X"],
@@ -67,7 +68,7 @@ Item {
             ["X-TAB","chord",["Ctrl"],"W","Close tab — Ctrl+W"],
             ["TERM","chord",["Ctrl","Alt"],"T","Terminal — Ctrl+Alt+T"],
             ["TASK","chord",["Alt"],"Tab","Task switch — Alt+Tab"] ] },
-        { title: "CUSTOM", keys: [] }
+        { title: "CUSTOM", controller: root, keys: [] }
     ]
 
     readonly property var pickerKeys: [
@@ -427,6 +428,20 @@ Item {
         return root.pickerCategory === "all"
                 || root.categoryForKey(key) === root.pickerCategory
     })
+    readonly property var filteredPickerChoices: filteredPickerKeys.map(function(key) {
+        return {key:key, controller: root}
+    })
+    readonly property var pickerCategoryChoices: pickerCategories.map(function(category) {
+        return {category:category, controller: root}
+    })
+    readonly property var pageDotChoices: [
+        {index:0, controller: root},
+        {index:1, controller: root},
+        {index:2, controller: root},
+        {index:3, controller: root},
+        {index:4, controller: root},
+        {index:5, controller: root}
+    ]
 
     function categoryForKey(key) {
         if (key.type === "chord") return "combos"
@@ -526,148 +541,29 @@ Item {
         pickerOpen = false
     }
 
+    function openCustomKeyPicker() {
+        customKeyPicker.open()
+    }
+
+    function closeCustomKeyPicker() {
+        customKeyPicker.close()
+    }
+
+    function resetAvailableKeyGrid() {
+        availableKeyGrid.positionViewAtBeginning()
+    }
+
+    function setPageIndex(index) {
+        currentPageIndex = index
+    }
+
     function clearSlot(slot) {
         const next = draftAssignments.slice()
         next[slot] = {label:"", type:"", value:"", description:"Unassigned"}
         draftAssignments = next
     }
 
-    // Swipe-page delegates and the custom-key picker.
-    Component {
-        id: standardPage
-        GridLayout {
-            id: standardPageRoot
-            property var pageData
-            columns: 4
-            rowSpacing: 4
-            columnSpacing: 4
-            Repeater {
-                model: standardPageRoot.pageData.keys
-                KeyCap {
-                    id: standardKey
-                    required property var modelData
-                    Layout.fillWidth: true
-                    Layout.fillHeight: true
-                    showBorders: root.appearanceStore.keyBordersVisible
-                    keyLabel: standardKey.modelData[0]
-                    accent: root.appearanceStore.primary
-                    toolTipText: standardKey.modelData.length > 4 ? standardKey.modelData[4] : ""
-                    repeatEnabled: root.repeatableAction(standardKey.modelData)
-                    onClicked: root.trigger(standardKey.modelData)
-                }
-            }
-        }
-    }
-
-    Component {
-        id: customPage
-        Item {
-            id: customPageRoot
-            property var pageData
-
-            ColumnLayout {
-                anchors.fill: parent
-                spacing: 3
-                visible: !root.pickerOpen
-
-                RowLayout {
-                    Layout.fillWidth: true
-                    Layout.minimumHeight: 14
-                    Layout.preferredHeight: 16
-                    Layout.maximumHeight: 18
-                    spacing: 4
-
-                    Label {
-                        Layout.fillWidth: true
-                        text: root.customKeyStore.error.length > 0
-                              ? root.customKeyStore.error
-                              : root.editMode ? "SELECT A SLOT" : "9 CUSTOM KEYS"
-                        color: root.customKeyStore.error.length > 0
-                               ? "#ff6d91" : root.appearanceStore.primary
-                        font.pixelSize: 9
-                        font.bold: true
-                        style: Text.Outline
-                        styleColor: "#f0000000"
-                    }
-                    KeyCap {
-                        Layout.preferredWidth: 78
-                        Layout.preferredHeight: 16
-                        visible: root.editMode
-                        compact: true
-                        showBorders: root.appearanceStore.keyBordersVisible
-                        keyLabel: "CANCEL"
-                        accent: "#ff6d91"
-                        toolTipText: "Discard assignment changes"
-                        onClicked: root.cancelEditing()
-                    }
-                    KeyCap {
-                        Layout.preferredWidth: 54
-                        Layout.preferredHeight: 16
-                        compact: true
-                        showBorders: root.appearanceStore.keyBordersVisible
-                        keyLabel: root.editMode ? "SAVE" : "SET"
-                        accent: root.editMode ? "#72ff9f" : root.appearanceStore.secondary
-                        toolTipText: root.editMode
-                                     ? "Save all custom-key assignments"
-                                     : "Enter custom-key assignment mode"
-                        onClicked: root.toggleSetMode()
-                    }
-                }
-
-                GridLayout {
-                    Layout.fillWidth: true
-                    Layout.fillHeight: true
-                    Layout.minimumHeight: 108
-                    Layout.preferredHeight: 132
-                    columns: 3
-                    rowSpacing: 5
-                    columnSpacing: 5
-                    Repeater {
-                        model: 9
-                        KeyCap {
-                            id: customSlotKey
-                            required property int index
-                            property var assignment: root.editMode
-                                                     ? root.draftAssignments[customSlotKey.index]
-                                                     : root.customKeyStore.assignments[customSlotKey.index]
-                            Layout.fillWidth: true
-                            Layout.fillHeight: true
-                            showBorders: root.appearanceStore.keyBordersVisible
-                            keyLabel: customSlotKey.assignment && customSlotKey.assignment.label
-                                      ? customSlotKey.assignment.label : "＋"
-                            keyIcon: customSlotKey.assignment && customSlotKey.assignment.icon
-                                     ? customSlotKey.assignment.icon : ""
-                            accent: root.editMode && root.selectedSlot === customSlotKey.index
-                                    ? root.appearanceStore.secondary
-                                    : root.appearanceStore.primary
-                            toolTipText: root.editMode
-                                         ? "Assign slot " + (customSlotKey.index + 1) + "; hold to clear"
-                                         : (customSlotKey.assignment
-                                            ? customSlotKey.assignment.description : "Unassigned")
-                            toolTipIcon: customSlotKey.assignment && customSlotKey.assignment.icon
-                                         ? customSlotKey.assignment.icon : ""
-                            repeatEnabled: !root.editMode
-                                           && root.repeatableAssignment(customSlotKey.assignment)
-                            onClicked: {
-                                if (root.editMode) {
-                                    root.selectedSlot = customSlotKey.index
-                                    root.pickerOpen = true
-                                    customKeyPicker.open()
-                                } else {
-                                    root.triggerAssignment(customSlotKey.assignment)
-                                }
-                            }
-                            onPressAndHold: {
-                                if (root.editMode) root.clearSlot(customSlotKey.index)
-                            }
-                        }
-                    }
-                }
-            }
-
-        }
-    }
-
+    // Custom-key picker shared by the swipe-page components.
     Popup {
         id: customKeyPicker
         objectName: "customKeyPicker"
@@ -737,21 +633,23 @@ Item {
                 spacing: 3
 
                 Repeater {
-                    model: root.pickerCategories
+                    model: root.pickerCategoryChoices
                     KeyCap {
                         id: pickerCategoryKey
                         required property var modelData
+                        readonly property var category: modelData.category
+                        readonly property var controller: modelData.controller
                         Layout.fillWidth: true
                         Layout.fillHeight: true
                         compact: true
-                        showBorders: root.appearanceStore.keyBordersVisible
-                        keyLabel: pickerCategoryKey.modelData.label
-                        accent: root.pickerCategory === pickerCategoryKey.modelData.value
-                                ? "#ffffff" : root.appearanceStore.primary
-                        toolTipText: "Show " + pickerCategoryKey.modelData.label.toLowerCase() + " choices"
+                        showBorders: pickerCategoryKey.controller.appearanceStore.keyBordersVisible
+                        keyLabel: pickerCategoryKey.category.label
+                        accent: pickerCategoryKey.controller.pickerCategory === pickerCategoryKey.category.value
+                                ? "#ffffff" : pickerCategoryKey.controller.appearanceStore.primary
+                        toolTipText: "Show " + pickerCategoryKey.category.label.toLowerCase() + " choices"
                         onClicked: {
-                            root.pickerCategory = pickerCategoryKey.modelData.value
-                            availableKeyGrid.positionViewAtBeginning()
+                            pickerCategoryKey.controller.pickerCategory = pickerCategoryKey.category.value
+                            pickerCategoryKey.controller.resetAvailableKeyGrid()
                         }
                     }
                 }
@@ -768,7 +666,7 @@ Item {
                 clip: true
                 cellWidth: width / 8
                 cellHeight: 48
-                model: root.filteredPickerKeys
+                model: root.filteredPickerChoices
                 boundsBehavior: Flickable.StopAtBounds
                 ScrollBar.vertical: ScrollBar {
                     policy: ScrollBar.AlwaysOn
@@ -777,22 +675,24 @@ Item {
                 delegate: Item {
                     id: availableKey
                     required property var modelData
-                    width: availableKeyGrid.cellWidth
-                    height: availableKeyGrid.cellHeight
+                    readonly property var keyData: modelData.key
+                    readonly property var controller: modelData.controller
+                    width: GridView.view.cellWidth
+                    height: GridView.view.cellHeight
                     KeyCap {
                         anchors.fill: parent
                         anchors.margins: 2
-                        showBorders: root.appearanceStore.keyBordersVisible
-                        keyLabel: availableKey.modelData.label
-                        keyIcon: availableKey.modelData.icon || ""
-                        accent: availableKey.modelData.type === "chord"
-                                ? root.appearanceStore.secondary
-                                : availableKey.modelData.category === "token" ? "#72ff9f"
-                                : availableKey.modelData.category === "emoji" ? "#ffd166"
-                                : root.appearanceStore.primary
-                        toolTipText: availableKey.modelData.description
-                        toolTipIcon: availableKey.modelData.icon || ""
-                        onClicked: root.chooseKey(availableKey.modelData)
+                        showBorders: availableKey.controller.appearanceStore.keyBordersVisible
+                        keyLabel: availableKey.keyData.label
+                        keyIcon: availableKey.keyData.icon || ""
+                        accent: availableKey.keyData.type === "chord"
+                                ? availableKey.controller.appearanceStore.secondary
+                                : availableKey.keyData.category === "token" ? "#72ff9f"
+                                : availableKey.keyData.category === "emoji" ? "#ffd166"
+                                : availableKey.controller.appearanceStore.primary
+                        toolTipText: availableKey.keyData.description
+                        toolTipIcon: availableKey.keyData.icon || ""
+                        onClicked: availableKey.controller.chooseKey(availableKey.keyData)
                     }
                 }
             }
@@ -809,29 +709,42 @@ Item {
             Label {
                 Layout.fillWidth: true
                 text: root.pickerOpen
-                      ? "CUSTOM / PICK KEY" : root.pages[view.currentIndex].title
+                      ? "CUSTOM / PICK KEY" : root.pages[root.currentPageIndex].title
                 color: root.appearanceStore.secondary
                 font.bold: true
                 style: Text.Outline
                 styleColor: "#f0000000"
             }
-            PageIndicator {
-                id: pageIndicator
-                count: view.count
-                currentIndex: view.currentIndex
-                interactive: !root.pickerOpen
-                onCurrentIndexChanged: view.currentIndex = pageIndicator.currentIndex
-                delegate: Rectangle {
-                    id: pageIndicatorDot
-                    required property int index
-                    implicitWidth: 9
-                    implicitHeight: 9
-                    radius: width / 2
-                    color: pageIndicatorDot.index === pageIndicator.currentIndex
-                           ? root.appearanceStore.secondary : "transparent"
-                    border.width: 1
-                    border.color: pageIndicatorDot.index === pageIndicator.currentIndex
-                                  ? "#ffffff" : root.appearanceStore.primary
+
+            Row {
+                spacing: 6
+
+                Repeater {
+                    model: root.pageDotChoices
+
+                    Rectangle {
+                        id: pageIndicatorDot
+
+                        required property var modelData
+
+                        readonly property int pageIndex: modelData.index
+                        readonly property var controller: modelData.controller
+
+                        width: 9
+                        height: 9
+                        radius: width / 2
+                        color: pageIndicatorDot.pageIndex === pageIndicatorDot.controller.currentPageIndex
+                               ? pageIndicatorDot.controller.appearanceStore.secondary : "transparent"
+                        border.width: 1
+                        border.color: pageIndicatorDot.pageIndex === pageIndicatorDot.controller.currentPageIndex
+                                      ? "#ffffff" : pageIndicatorDot.controller.appearanceStore.primary
+
+                        MouseArea {
+                            anchors.fill: parent
+                            enabled: !pageIndicatorDot.controller.pickerOpen
+                            onClicked: pageIndicatorDot.controller.setPageIndex(pageIndicatorDot.pageIndex)
+                        }
+                    }
                 }
             }
         }
@@ -842,13 +755,16 @@ Item {
             Layout.fillHeight: true
             clip: true
             interactive: !root.pickerOpen
+            currentIndex: root.currentPageIndex
+            onCurrentIndexChanged: root.currentPageIndex = view.currentIndex
 
             Repeater {
                 model: root.pages
                 Loader {
                     required property var modelData
                     property var pageData: modelData
-                    sourceComponent: pageData.title === "CUSTOM" ? customPage : standardPage
+                    source: pageData.title === "CUSTOM"
+                            ? "DeveloperCustomPage.qml" : "DeveloperStandardPage.qml"
                     onLoaded: item.pageData = pageData
                 }
             }

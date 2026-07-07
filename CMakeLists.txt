@@ -3,7 +3,7 @@
 
 cmake_minimum_required(VERSION 3.21)
 
-project(imboard VERSION 0.2.1 LANGUAGES CXX)
+project(imboard VERSION 0.2.2 LANGUAGES CXX)
 
 include(CTest)
 
@@ -18,6 +18,13 @@ find_package(Qt6 6.4 REQUIRED COMPONENTS DBus Quick Qml Widgets)
 find_package(LayerShellQt QUIET)
 
 qt_standard_project_setup(REQUIRES 6.4)
+
+if(QT_KNOWN_POLICY_QTP0001)
+    qt_policy(SET QTP0001 NEW)
+endif()
+if(QT_KNOWN_POLICY_QTP0004)
+    qt_policy(SET QTP0004 NEW)
+endif()
 
 qt_add_executable(imboard
     src/main.cpp
@@ -49,6 +56,7 @@ qt_add_executable(imboard
 qt_add_qml_module(imboard
     URI Imboard
     VERSION 1.0
+    RESOURCE_PREFIX /
     NO_CACHEGEN
     NO_IMPORT_SCAN
     QML_FILES
@@ -58,7 +66,9 @@ qt_add_qml_module(imboard
         qml/AppearancePopup.qml
         qml/ConfigPopup.qml
         qml/CompatibilityWarningPopup.qml
+        qml/DeveloperCustomPage.qml
         qml/DeveloperPad.qml
+        qml/DeveloperStandardPage.qml
         qml/KeyboardSurface.qml
         qml/KeyCap.qml
         qml/LayoutPopup.qml
