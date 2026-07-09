@@ -1,25 +1,39 @@
-# Imboard
+# IMBOARD
 
-Imboard, short for Input Method Board, is a virtual keyboard for KDE Wayland
-desktops. It combines a permanent alphabet board with a
-swipeable developer pad for numbers, symbols, navigation, function keys,
-shortcuts, and user-defined key actions.
+IMBOARD, short for Input Method Board, has a name that deserves a small grin.
+In Linux circles, "input method" usually means the machinery behind IMEs such as
+IBus, Fcitx, or Maliit. IMBOARD is not trying to be that sort of thing. It is
+much more literal than that, and a little cheekier too: a practical method of
+providing input to your computer.
 
-Imboard exists because desktop work on touch-first KDE Wayland systems often
-needs keys that are awkward to access consistently on compact on-screen
-keyboards: pipes, braces, arrows, function keys, lock keys, and application
-shortcuts. It is aimed at scripting, editing, terminal work, and other
-developer-heavy desktop tasks.
+IMBOARD is a virtual keyboard built for desktop productivity rather than mobile
+text entry. It is aimed primarily at Steam Deck Desktop Mode, but it is intended
+to work on KDE Wayland desktops more generally. The emphasis is on the keys
+people reach for when work gets awkward: shortcuts, modifiers, navigation,
+function keys, and less common symbols that are annoying to fish out of a
+compact on-screen keyboard.
+
+Keyboard input is sent through the XDG Remote Desktop portal, which lets
+IMBOARD stay within the normal Wayland security model. That choice is
+deliberate: it gives IMBOARD a standard, permission-based route for generating
+real keyboard events without needing compositor-specific hacks or assumptions about the desktop session. Permission is explicit, it can be revoked, and the resulting input behaves naturally with shortcuts, modifier combinations, and function keys.
+
+In practice, that means:
+
+- It feels like a normal plugin keyboard, not a predictive text system.
+- It's not so tightly coupled as a traditional virtual keyboard, it is more app like, you can move it, resize it, and make it transparent enough to type over other windows.
+- The pad stays simple, with an easy way to keep the keys you use most close
+  at hand.
 
 ## Status
 
-Current release target: `0.2.2`.
+Current release: `0.2.2`.
 
-Imboard presents required keyboard-access setup on first visible launch. The
+IMBOARD presents required keyboard-access setup on first visible launch. The
 standard desktop portal grants keyboard-only control and returns a restore token
-for later sessions. Imboard remains input-inert until that setup succeeds.
+for later sessions. IMBOARD remains input-inert until that setup succeeds.
 KWin virtual-keyboard registration remains excluded from normal build and
-install paths because Imboard uses layer-shell and desktop portals instead.
+install paths because IMBOARD uses layer-shell and desktop portals instead.
 
 KDE Wayland is the supported target environment. The current release has been
 validated on SteamOS Desktop Mode and Fedora KDE Wayland. Other KDE Wayland
@@ -27,9 +41,9 @@ desktops may work if they support layer-shell and the XDG Remote Desktop portal.
 
 ## Demo
 
-![IMBOARD 0.2.0 walkthrough](docs/videos/imboard-demo-0.2.0.gif)
+![IMBOARD walkthrough](docs/videos/imboard-demo-0.2.0.gif)
 
-Higher-quality video: [IMBOARD 0.2.0 walkthrough](docs/videos/imboard-demo-0.2.0.webm)
+Higher-quality video: [IMBOARD walkthrough](docs/videos/imboard-demo-0.2.0.webm)
 
 ## Install
 
@@ -151,13 +165,13 @@ For details, see [Security](SECURITY.md).
 
 ## Screenshots
 
-![Imboard with function-key developer pad](docs/screenshots/imboard-main-fkeys.png)
+![IMBOARD with function-key developer pad](docs/screenshots/imboard-main-fkeys.png)
 
-![Imboard custom-key pad on the left](docs/screenshots/imboard-custom-pad.png)
+![IMBOARD custom-key pad on the left](docs/screenshots/imboard-custom-pad.png)
 
-![Imboard appearance settings](docs/screenshots/imboard-appearance-settings.png)
+![IMBOARD appearance settings](docs/screenshots/imboard-appearance-settings.png)
 
-![Imboard transparent overlay while typing in an editor](docs/screenshots/imboard-transparent-overlay.png)
+![IMBOARD transparent overlay while typing in an editor](docs/screenshots/imboard-transparent-overlay.png)
 
 ## Product constraints
 
@@ -180,7 +194,7 @@ For details, see [Security](SECURITY.md).
 
 ## Native Development Build
 
-Imboard requires CMake 3.21+, Qt 6.4+ with Qt Quick and Qt DBus, and Ninja.
+IMBOARD requires CMake 3.21+, Qt 6.4+ with Qt Quick and Qt DBus, and Ninja.
 
 ```sh
 cmake -S . -B build -G Ninja
@@ -198,21 +212,21 @@ Keys log their requested actions until initial keyboard-access setup succeeds.
 After setup, later launches automatically attempt to restore the saved portal
 session; CONFIG exposes READY or REPAIR status rather than an input off switch.
 
-Only one Imboard instance can run. A second launch asks the existing window to
+Only one IMBOARD instance can run. A second launch asks the existing window to
 show instead of creating another process. A reliable external shutdown path is:
 
 ```sh
 ./build/imboard --quit
 ```
 
-Emoji tooltip artwork is from [Twemoji](https://github.com/twitter/twemoji),
+Emoji tooltip artwork is from [Twemoji](https://github.com/jdecked/twemoji),
 used unmodified under CC BY 4.0. The bundled graphics licence is at
 `assets/twemoji/LICENSE-GRAPHICS`. Emoji and other non-ASCII text input are
 experimental and disabled by default because the current fallback temporarily
 uses the clipboard before sending `Ctrl+V`, then attempts to restore the
 previous clipboard text.
 
-Regional main-keyboard layouts are JSON resources. Imboard includes common
+Regional main-keyboard layouts are JSON resources. IMBOARD includes common
 English QWERTY regional choices and behaves like a physical keyboard: choose the
 layout that matches the current KDE or SteamOS system keyboard layout. See
 [Adding keyboard layouts](docs/keyboard-layouts.md) for the extension schema.
@@ -220,8 +234,8 @@ layout that matches the current KDE or SteamOS system keyboard layout. See
 The local Flatpak development manifest and test procedure are described in
 [Flatpak development build](docs/flatpak-development.md).
 
-Flathub submission preparation is tracked in
-[Flathub submission path](docs/flathub-submission.md).
+GitHub release packaging is handled by the local Flatpak bundle scripts in
+`scripts/`.
 
 Release validation is tracked in [Release checklist](docs/release-checklist.md).
 
@@ -236,27 +250,27 @@ current component ownership and runtime flow are documented in
 - The keyboard uses the XDG Remote Desktop portal because Wayland correctly
   blocks ordinary apps from injecting input into other apps without permission.
 - Portal permission wording varies by desktop and may mention Input Device,
-  Remote Desktop, or Remote Control even though Imboard requests keyboard
+  Remote Desktop, or Remote Control even though IMBOARD requests keyboard
   capability only.
-- The selected Imboard layout must match the desktop keyboard layout for shifted
+- The selected IMBOARD layout must match the desktop keyboard layout for shifted
   symbols to match the key labels.
-- Non-KDE Wayland desktops are not supported targets. Imboard shows a one-time
+- Non-KDE Wayland desktops are not supported targets. IMBOARD shows a one-time
   compatibility note if launched outside KDE.
 
 ## Maintenance and support
 
-Imboard is a spare-time project. Bug reports, focused pull requests, and KDE
-Wayland test results are welcome. If Imboard saves you time and you want to
+IMBOARD is a spare-time project. Bug reports, focused pull requests, and KDE
+Wayland test results are welcome. If IMBOARD saves you time and you want to
 support the work, Ko-fi donations are welcome at
 <https://ko-fi.com/anicetuscer>.
 
 ## Licence and branding
 
-Imboard is free software licensed under GPL-3.0-or-later; see [LICENSE](LICENSE).
+IMBOARD is free software licensed under GPL-3.0-or-later; see [LICENSE](LICENSE).
 
-The Imboard name and official branding identify the upstream project. Modified
-redistributions must not imply that they are official Imboard releases unless
-that use has been approved. See [Imboard name and branding](TRADEMARKS.md).
+The IMBOARD name and official branding identify the upstream project. Modified
+redistributions must not imply that they are official IMBOARD releases unless
+that use has been approved. See [IMBOARD name and branding](TRADEMARKS.md).
 
 ## Roadmap
 
@@ -276,6 +290,6 @@ that use has been approved. See [Imboard name and branding](TRADEMARKS.md).
 
 ## Safety
 
-Do not add `X-KDE-Wayland-VirtualKeyboard=true` to an Imboard desktop entry or
-enable KWin virtual-keyboard autoload. Imboard is a layer-shell client and uses
+Do not add `X-KDE-Wayland-VirtualKeyboard=true` to an IMBOARD desktop entry or
+enable KWin virtual-keyboard autoload. IMBOARD is a layer-shell client and uses
 the desktop portal for input; it is not a KWin input-method plugin.
