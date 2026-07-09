@@ -11,7 +11,7 @@
 
 namespace
 {
-constexpr int CustomSlotCount = 9;
+constexpr int CustomSlotCount = 16;
 
 QVariantMap emptyAssignment()
 {
@@ -101,7 +101,7 @@ QVariantList CustomKeyStore::assignments() const
     return m_assignments;
 }
 
-QString CustomKeyStore::error() const
+const QString &CustomKeyStore::error() const noexcept
 {
     return m_error;
 }

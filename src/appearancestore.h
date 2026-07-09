@@ -18,24 +18,33 @@ class AppearanceStore final : public QObject
     Q_PROPERTY(bool developerPadOnLeft READ developerPadOnLeft NOTIFY appearanceChanged)
     Q_PROPERTY(bool frameBordersVisible READ frameBordersVisible NOTIFY appearanceChanged)
     Q_PROPERTY(bool keyBordersVisible READ keyBordersVisible NOTIFY appearanceChanged)
+    Q_PROPERTY(bool customPadOnlyEnabled READ customPadOnlyEnabled NOTIFY appearanceChanged)
+    Q_PROPERTY(int customPadKeyCount READ customPadKeyCount NOTIFY appearanceChanged)
+    Q_PROPERTY(int customPadColumns READ customPadColumns NOTIFY appearanceChanged)
 
 public:
     explicit AppearanceStore(QObject *parent = nullptr);
     ~AppearanceStore() override;
 
-    [[nodiscard]] QString scheme() const;
+    [[nodiscard]] const QString &scheme() const noexcept;
     [[nodiscard]] QColor primary() const;
     [[nodiscard]] QColor secondary() const;
     [[nodiscard]] qreal backdropOpacity() const noexcept;
     [[nodiscard]] bool developerPadOnLeft() const noexcept;
     [[nodiscard]] bool frameBordersVisible() const noexcept;
     [[nodiscard]] bool keyBordersVisible() const noexcept;
+    [[nodiscard]] bool customPadOnlyEnabled() const noexcept;
+    [[nodiscard]] int customPadKeyCount() const noexcept;
+    [[nodiscard]] int customPadColumns() const noexcept;
 
-    Q_INVOKABLE bool selectScheme(const QString &scheme);
+    Q_INVOKABLE bool selectScheme(const QString &schemeId);
     Q_INVOKABLE void setBackdropOpacity(qreal opacity);
     Q_INVOKABLE void toggleDeveloperPadSide();
     Q_INVOKABLE void toggleFrameBorders();
     Q_INVOKABLE void toggleKeyBorders();
+    Q_INVOKABLE void setCustomPadOnlyEnabled(bool enabled);
+    Q_INVOKABLE void setCustomPadKeyCount(int count);
+    Q_INVOKABLE void setCustomPadColumns(int columns);
 
 signals:
     void appearanceChanged();
@@ -49,5 +58,8 @@ private:
     bool m_developerPadOnLeft = false;
     bool m_frameBordersVisible = true;
     bool m_keyBordersVisible = true;
+    bool m_customPadOnlyEnabled = false;
+    int m_customPadKeyCount = 9;
+    int m_customPadColumns = 0;
     QTimer m_settingsSyncTimer;
 };

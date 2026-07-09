@@ -17,7 +17,7 @@ public:
     explicit CustomKeyStore(QObject *parent = nullptr);
 
     QVariantList assignments() const;
-    [[nodiscard]] QString error() const;
+    [[nodiscard]] const QString &error() const noexcept;
     Q_INVOKABLE bool commit(const QVariantList &newAssignments);
 
 signals:

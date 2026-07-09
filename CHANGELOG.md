@@ -1,5 +1,24 @@
 # Changelog
 
+## 0.4.0 - 2026-07-09
+
+Minor release for custom pad only mode.
+
+### Added
+
+- Added custom pad only mode for running IMBOARD as a compact, configurable
+  pad of 1 to 16 custom keys.
+- Added configurable custom pad only mode key count and grid layout controls.
+- Added save/cancel editing, slot reordering, long-press clearing, and
+  temporary editor resizing for the custom pad only workflow.
+- Added a README GIF showing custom pad only mode with 1 to 16 visible keys.
+
+### Changed
+
+- Expanded custom key storage from 9 to 16 slots.
+- Updated custom pad editing so the main board and custom pad only mode share
+  the same custom key assignments.
+
 ## 0.3.0 - 2026-07-09
 
 Minor release for public-project polish.

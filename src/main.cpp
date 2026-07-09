@@ -134,19 +134,37 @@ int main(int argc, char *argv[])
         return 6;
     }
 
-    QSettings settings;
-    const QSize defaultSize(1120, 350);
-    const QSize savedSize = settings.value(QStringLiteral("window/size"), defaultSize).toSize();
-    const QSize maximumSize = window->screen()->availableGeometry().size();
-    window->resize(savedSize.boundedTo(maximumSize).expandedTo(window->minimumSize()));
+    const auto windowSizeKey = [&appearance]() {
+        return appearance.customPadOnlyEnabled()
+                   ? QStringLiteral("window/customPadSize")
+                   : QStringLiteral("window/fullSize");
+    };
+    const auto defaultWindowSize = [&appearance]() {
+        return appearance.customPadOnlyEnabled() ? QSize(340, 220) : QSize(1120, 350);
+    };
+    const auto restoreWindowSize = [window, &windowSizeKey, &defaultWindowSize]() {
+        QSettings settings;
+        if (!settings.contains(QStringLiteral("window/fullSize"))
+            && settings.contains(QStringLiteral("window/size"))) {
+            settings.setValue(QStringLiteral("window/fullSize"),
+                              settings.value(QStringLiteral("window/size")));
+        }
+        const QSize savedSize = settings.value(windowSizeKey(), defaultWindowSize()).toSize();
+        const QSize maximumSize = window->screen()->availableGeometry().size();
+        window->resize(savedSize.boundedTo(maximumSize).expandedTo(window->minimumSize()));
+    };
+    restoreWindowSize();
     surface.configure(window, previewWindow);
 
     QTimer sizeSaveTimer;
     sizeSaveTimer.setSingleShot(true);
     sizeSaveTimer.setInterval(250);
-    QObject::connect(&sizeSaveTimer, &QTimer::timeout, window, [window]() {
+    QObject::connect(&sizeSaveTimer, &QTimer::timeout, window, [window, &windowSizeKey]() {
+        if (window->property("customPadEditorMode").toBool()) {
+            return;
+        }
         QSettings settings;
-        settings.setValue(QStringLiteral("window/size"), window->size());
+        settings.setValue(windowSizeKey(), window->size());
         settings.sync();
         if (settings.status() != QSettings::NoError)
             qWarning() << "Could not save the Imboard window size";
@@ -155,7 +173,20 @@ int main(int argc, char *argv[])
                      qOverload<>(&QTimer::start));
     QObject::connect(window, &QWindow::heightChanged, &sizeSaveTimer,
                      qOverload<>(&QTimer::start));
-
+    bool customPadMode = appearance.customPadOnlyEnabled();
+    QObject::connect(&appearance, &AppearanceStore::appearanceChanged, window,
+                     [window, &appearance, &customPadMode, &restoreWindowSize]() {
+        const bool nextCustomPadMode = appearance.customPadOnlyEnabled();
+        QTimer::singleShot(0, window, [window, nextCustomPadMode,
+                                       &customPadMode, &restoreWindowSize]() {
+            if (customPadMode != nextCustomPadMode) {
+                customPadMode = nextCustomPadMode;
+                restoreWindowSize();
+            } else if (window->size().expandedTo(window->minimumSize()) != window->size()) {
+                window->resize(window->size().expandedTo(window->minimumSize()));
+            }
+        });
+    });
     auto showKeyboard = [window, &surface]() {
         if (surface.layerShellActive()) window->show();
         else window->showNormal();

@@ -17,7 +17,22 @@ Window {
     required property var surfaceController
     required property bool suppressInitialSetup
 
-    readonly property string appVersion: "0.3.0"
+    readonly property string appVersion: "0.4.0"
+    readonly property int customPadKeyCount: Math.max(1, Math.min(16, appearanceStore.customPadKeyCount))
+    readonly property int customPadColumns: appearanceStore.customPadColumns > 0
+                                            ? Math.min(appearanceStore.customPadColumns,
+                                                       customPadKeyCount)
+                                            : customPadKeyCount <= 1 ? 1
+                                              : customPadKeyCount <= 4 ? 2
+                                              : customPadKeyCount <= 9 ? 3 : 4
+    readonly property int customPadRows: Math.ceil(customPadKeyCount / customPadColumns)
+    readonly property int customPadWidth: Math.max(190, customPadColumns * 74 + 38)
+    readonly property int customPadHeight: Math.max(120, customPadRows * 58 + 72)
+    readonly property int customPadEditorWidth: Math.max(customPadWidth, 360)
+    readonly property int customPadEditorHeight: Math.max(customPadHeight, 220)
+    readonly property bool customPadEditorMode: keyboardSurface.customPadEditorMode
+    property int savedCompactPadWidth: 0
+    property int savedCompactPadHeight: 0
     property bool portalBusy: inputController.backendStatus.indexOf("Requesting") === 0
                               || inputController.backendStatus.indexOf("Waiting") === 0
 
@@ -43,8 +58,12 @@ Window {
 
     width: Math.min(Screen.width, 1120)
     height: Math.min(Screen.height * 0.44, 350)
-    minimumWidth: 720
-    minimumHeight: 260
+    minimumWidth: appearanceStore.customPadOnlyEnabled
+                  ? customPadEditorMode ? customPadEditorWidth : customPadWidth
+                  : 720
+    minimumHeight: appearanceStore.customPadOnlyEnabled
+                   ? customPadEditorMode ? customPadEditorHeight : customPadHeight
+                   : 260
     visible: false
     color: "transparent"
     flags: Qt.Tool
@@ -58,6 +77,22 @@ Window {
         showCompatibilityWarning()
         showRequiredSetup()
         showStartupPrompt()
+    }
+
+    onCustomPadEditorModeChanged: {
+        if (!appearanceStore.customPadOnlyEnabled) return
+
+        if (customPadEditorMode) {
+            savedCompactPadWidth = width
+            savedCompactPadHeight = height
+            width = Math.min(Screen.width, Math.max(width, customPadEditorWidth))
+            height = Math.min(Screen.height, Math.max(height, customPadEditorHeight))
+        } else if (savedCompactPadWidth > 0 && savedCompactPadHeight > 0) {
+            width = Math.max(customPadWidth, savedCompactPadWidth)
+            height = Math.max(customPadHeight, savedCompactPadHeight)
+            savedCompactPadWidth = 0
+            savedCompactPadHeight = 0
+        }
     }
 
     Connections {
@@ -139,6 +174,7 @@ Window {
     }
 
     KeyboardSurface {
+        id: keyboardSurface
         anchors.fill: parent
         appearanceStore: root.appearanceStore
         customKeyStore: root.customKeyStore

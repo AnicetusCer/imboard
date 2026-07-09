@@ -3,7 +3,7 @@
 
 cmake_minimum_required(VERSION 3.21)
 
-project(imboard VERSION 0.3.0 LANGUAGES CXX)
+project(imboard VERSION 0.4.0 LANGUAGES CXX)
 
 include(CTest)
 
@@ -66,6 +66,7 @@ qt_add_qml_module(imboard
         qml/AppearancePopup.qml
         qml/ConfigPopup.qml
         qml/CompatibilityWarningPopup.qml
+        qml/CustomPadOnlyPage.qml
         qml/DeveloperCustomPage.qml
         qml/DeveloperPad.qml
         qml/DeveloperStandardPage.qml

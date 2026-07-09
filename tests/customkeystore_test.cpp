@@ -22,7 +22,7 @@ private slots:
     void persistsSixNormalizedSlots()
     {
         CustomKeyStore initial;
-        QCOMPARE(initial.assignments().size(), 9);
+        QCOMPARE(initial.assignments().size(), 16);
 
         QVariantList assignments;
         assignments.append(QVariantMap{
@@ -67,7 +67,7 @@ private slots:
         QVERIFY(initial.commit(assignments));
 
         CustomKeyStore reloaded;
-        QCOMPARE(reloaded.assignments().size(), 9);
+        QCOMPARE(reloaded.assignments().size(), 16);
         QCOMPARE(reloaded.assignments().at(0).toMap().value(QStringLiteral("value")).toString(),
                  QStringLiteral("Escape"));
         QCOMPARE(reloaded.assignments().at(1).toMap().value(QStringLiteral("value")).toString(),
@@ -89,6 +89,7 @@ private slots:
         QVERIFY(reloaded.assignments().at(6).toMap().value(QStringLiteral("type")).toString().isEmpty());
         QVERIFY(reloaded.assignments().at(7).toMap().value(QStringLiteral("type")).toString().isEmpty());
         QVERIFY(reloaded.assignments().at(8).toMap().value(QStringLiteral("type")).toString().isEmpty());
+        QVERIFY(reloaded.assignments().at(15).toMap().value(QStringLiteral("type")).toString().isEmpty());
         QVERIFY(reloaded.error().isEmpty());
     }
 

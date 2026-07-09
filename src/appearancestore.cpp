@@ -28,6 +28,16 @@ const QHash<QString, Palette> &palettes()
     };
     return values;
 }
+
+int boundedCustomPadKeyCount(int count)
+{
+    return qBound(1, count, 16);
+}
+
+int boundedCustomPadColumns(int columns)
+{
+    return qBound(0, columns, 4);
+}
 }
 
 AppearanceStore::AppearanceStore(QObject *parent)
@@ -48,6 +58,11 @@ AppearanceStore::AppearanceStore(QObject *parent)
     m_developerPadOnLeft = settings.value(QStringLiteral("appearance/developerPadOnLeft"), false).toBool();
     m_frameBordersVisible = settings.value(QStringLiteral("appearance/frameBordersVisible"), true).toBool();
     m_keyBordersVisible = settings.value(QStringLiteral("appearance/keyBordersVisible"), true).toBool();
+    m_customPadOnlyEnabled = settings.value(QStringLiteral("appearance/customPadOnlyEnabled"), false).toBool();
+    m_customPadKeyCount = boundedCustomPadKeyCount(
+        settings.value(QStringLiteral("appearance/customPadKeyCount"), 9).toInt());
+    m_customPadColumns = boundedCustomPadColumns(
+        settings.value(QStringLiteral("appearance/customPadColumns"), 0).toInt());
     if (settings.status() != QSettings::NoError)
         qWarning() << "Could not read appearance settings; defaults will be used";
 }
@@ -57,7 +72,7 @@ AppearanceStore::~AppearanceStore()
     if (m_settingsSyncTimer.isActive()) syncSettings();
 }
 
-QString AppearanceStore::scheme() const
+const QString &AppearanceStore::scheme() const noexcept
 {
     return m_scheme;
 }
@@ -92,15 +107,30 @@ bool AppearanceStore::keyBordersVisible() const noexcept
     return m_keyBordersVisible;
 }
 
-bool AppearanceStore::selectScheme(const QString &scheme)
+bool AppearanceStore::customPadOnlyEnabled() const noexcept
 {
-    if (!palettes().contains(scheme)) {
+    return m_customPadOnlyEnabled;
+}
+
+int AppearanceStore::customPadKeyCount() const noexcept
+{
+    return m_customPadKeyCount;
+}
+
+int AppearanceStore::customPadColumns() const noexcept
+{
+    return m_customPadColumns;
+}
+
+bool AppearanceStore::selectScheme(const QString &schemeId)
+{
+    if (!palettes().contains(schemeId)) {
         return false;
     }
-    if (m_scheme == scheme) {
+    if (m_scheme == schemeId) {
         return true;
     }
-    m_scheme = scheme;
+    m_scheme = schemeId;
     QSettings().setValue(QStringLiteral("appearance/scheme"), m_scheme);
     scheduleSettingsSync();
     emit appearanceChanged();
@@ -139,6 +169,41 @@ void AppearanceStore::toggleKeyBorders()
 {
     m_keyBordersVisible = !m_keyBordersVisible;
     QSettings().setValue(QStringLiteral("appearance/keyBordersVisible"), m_keyBordersVisible);
+    scheduleSettingsSync();
+    emit appearanceChanged();
+}
+
+void AppearanceStore::setCustomPadOnlyEnabled(bool enabled)
+{
+    if (m_customPadOnlyEnabled == enabled) {
+        return;
+    }
+    m_customPadOnlyEnabled = enabled;
+    QSettings().setValue(QStringLiteral("appearance/customPadOnlyEnabled"), m_customPadOnlyEnabled);
+    scheduleSettingsSync();
+    emit appearanceChanged();
+}
+
+void AppearanceStore::setCustomPadKeyCount(int count)
+{
+    const int bounded = boundedCustomPadKeyCount(count);
+    if (m_customPadKeyCount == bounded) {
+        return;
+    }
+    m_customPadKeyCount = bounded;
+    QSettings().setValue(QStringLiteral("appearance/customPadKeyCount"), m_customPadKeyCount);
+    scheduleSettingsSync();
+    emit appearanceChanged();
+}
+
+void AppearanceStore::setCustomPadColumns(int columns)
+{
+    const int bounded = boundedCustomPadColumns(columns);
+    if (m_customPadColumns == bounded) {
+        return;
+    }
+    m_customPadColumns = bounded;
+    QSettings().setValue(QStringLiteral("appearance/customPadColumns"), m_customPadColumns);
     scheduleSettingsSync();
     emit appearanceChanged();
 }

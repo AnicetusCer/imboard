@@ -27,7 +27,7 @@ In practice, that means:
 
 ## Status
 
-Current release: `0.3.0`.
+Current release: `0.4.0`.
 
 IMBOARD presents required keyboard-access setup on first visible launch. The
 standard desktop portal grants keyboard-only control and returns a restore token
@@ -44,6 +44,10 @@ desktops may work if they support layer-shell and the XDG Remote Desktop portal.
 ![IMBOARD walkthrough](docs/videos/imboard-demo-0.2.0.gif)
 
 Higher-quality video: [IMBOARD walkthrough](docs/videos/imboard-demo-0.2.0.webm)
+
+Custom pad only mode, from 1 to 16 visible keys:
+
+![IMBOARD custom pad only mode key counts](docs/videos/imboard-custom-pad-only-counts.gif)
 
 ## Install
 
@@ -73,12 +77,12 @@ It installs into your user account.
    sudo pacman -S flatpak
    ```
 
-2. Download `imboard-0.3.0-x86_64.flatpak` from the GitHub release.
+2. Download `imboard-0.4.0-x86_64.flatpak` from the GitHub release.
 
 3. Install it:
 
    ```sh
-   flatpak install --user ./imboard-0.3.0-x86_64.flatpak
+   flatpak install --user ./imboard-0.4.0-x86_64.flatpak
    ```
 
 4. Launch IMBOARD from the KDE app launcher, or run:
@@ -115,7 +119,7 @@ not need root once Flatpak and `flatpak-builder` are installed.
    ```sh
    git clone https://github.com/AnicetusCer/imboard.git
    cd imboard
-   git checkout v0.3.0
+   git checkout v0.4.0
    ```
 
 3. Build and install the user Flatpak:

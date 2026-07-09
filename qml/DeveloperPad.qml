@@ -559,8 +559,29 @@ Item {
 
     function clearSlot(slot) {
         const next = draftAssignments.slice()
-        next[slot] = {label:"", type:"", value:"", description:"Unassigned"}
+        next[slot] = {
+            label: "",
+            type: "",
+            value: "",
+            modifiers: [],
+            key: "",
+            icon: "",
+            description: "Unassigned"
+        }
         draftAssignments = next
+        selectedSlot = slot
+    }
+
+    function moveSelectedSlot(delta) {
+        if (selectedSlot < 0) return
+        const target = selectedSlot + delta
+        if (target < 0 || target >= draftAssignments.length) return
+        const next = draftAssignments.slice()
+        const item = next[selectedSlot]
+        next[selectedSlot] = next[target]
+        next[target] = item
+        draftAssignments = next
+        selectedSlot = target
     }
 
     // Custom-key picker shared by the swipe-page components.
@@ -570,8 +591,8 @@ Item {
         parent: Overlay.overlay
         x: Math.round((parent.width - width) / 2)
         y: Math.round((parent.height - height) / 2)
-        width: Math.max(620, Math.min(760, parent.width - 36))
-        height: Math.max(180, Math.min(280, parent.height - 36))
+        width: Math.min(760, Math.max(160, parent.width - 24))
+        height: Math.min(280, Math.max(90, parent.height - 24))
         padding: 10
         modal: true
         dim: false
@@ -600,7 +621,7 @@ Item {
                 anchors.left: parent.left
                 anchors.right: parent.right
                 anchors.top: parent.top
-                height: 26
+                height: Math.max(20, Math.min(26, parent.height * 0.18))
 
                 Label {
                     Layout.fillWidth: true
@@ -629,7 +650,7 @@ Item {
                 anchors.right: parent.right
                 anchors.top: pickerHeader.bottom
                 anchors.topMargin: 5
-                height: 22
+                height: Math.max(18, Math.min(22, parent.height * 0.16))
                 spacing: 3
 
                 Repeater {
@@ -664,8 +685,8 @@ Item {
                 anchors.bottom: parent.bottom
                 anchors.topMargin: 6
                 clip: true
-                cellWidth: width / 8
-                cellHeight: 48
+                cellWidth: width / (width < 520 ? 4 : 8)
+                cellHeight: width < 520 ? 38 : 48
                 model: root.filteredPickerChoices
                 boundsBehavior: Flickable.StopAtBounds
                 ScrollBar.vertical: ScrollBar {

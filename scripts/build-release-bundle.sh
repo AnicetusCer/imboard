@@ -5,7 +5,7 @@
 set -eu
 
 APP_ID="io.github.anicetuscer.imboard"
-VERSION="0.3.0"
+VERSION="0.4.0"
 ARCH="$(flatpak --default-arch)"
 BUILD_DIR="flatpak-build"
 REPO_DIR="flatpak-repo"

@@ -39,10 +39,12 @@ bool schedule(QGuiApplication &app, QWindow *window, AppearanceStore &appearance
         window->findChild<QObject *>(QStringLiteral("removeAccessPopup"));
     auto *alphaPanel = window->findChild<QObject *>(QStringLiteral("alphaPanel"));
     auto *developerPanel = window->findChild<QObject *>(QStringLiteral("developerPanel"));
+    auto *customPadOnlyPage = window->findChild<QObject *>(QStringLiteral("customPadOnlyPage"));
+    auto *customPadOnlyGrid = window->findChild<QObject *>(QStringLiteral("customPadOnlyGrid"));
 
     if (!picker || !grid || !aboutPopup || !appearancePopup || !layoutPopup || !configPopup
         || !portalExplanationPopup || !removeAccessPopup
-        || !alphaPanel || !developerPanel
+        || !alphaPanel || !developerPanel || !customPadOnlyPage || !customPadOnlyGrid
         || !invoke(picker, "open")) {
         qCritical() << "Could not open the custom-key picker during smoke test";
         return false;
@@ -152,7 +154,7 @@ bool schedule(QGuiApplication &app, QWindow *window, AppearanceStore &appearance
             app.exit(12);
         }
     });
-    QTimer::singleShot(2350, &app, [&app, removeAccessPopup]() {
+    QTimer::singleShot(2350, &app, [&app, &appearance, removeAccessPopup]() {
         const qreal width = removeAccessPopup->property("width").toReal();
         const qreal height = removeAccessPopup->property("height").toReal();
         if (width < 400.0 || height < 180.0) {
@@ -161,6 +163,37 @@ bool schedule(QGuiApplication &app, QWindow *window, AppearanceStore &appearance
             app.exit(13);
             return;
         }
+        if (!invoke(removeAccessPopup, "close")) {
+            app.exit(13);
+            return;
+        }
+        appearance.setCustomPadKeyCount(4);
+        appearance.setCustomPadColumns(2);
+        appearance.setCustomPadOnlyEnabled(true);
+    });
+    QTimer::singleShot(2600, &app, [&app, customPadOnlyPage, customPadOnlyGrid]() {
+        const qreal width = customPadOnlyGrid->property("width").toReal();
+        const qreal height = customPadOnlyGrid->property("height").toReal();
+        if (width < 100.0 || height < 80.0) {
+            qCritical() << "Custom-pad-only grid collapsed during smoke test:"
+                        << width << height;
+            app.exit(14);
+            return;
+        }
+        if (!invoke(customPadOnlyPage, "beginEdit"))
+            app.exit(14);
+    });
+    QTimer::singleShot(2850, &app, [&app, &appearance, customPadOnlyPage]() {
+        if (!customPadOnlyPage->property("editMode").toBool()) {
+            qCritical() << "Custom-pad edit mode did not open";
+            app.exit(15);
+            return;
+        }
+        if (!invoke(customPadOnlyPage, "finishEdit")) {
+            app.exit(15);
+            return;
+        }
+        appearance.setCustomPadOnlyEnabled(false);
         app.quit();
     });
 
