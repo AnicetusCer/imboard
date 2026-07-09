@@ -11,6 +11,7 @@ Item {
     property var pageData: ({controller:null})
 
     readonly property var controller: pageData.controller
+    readonly property bool hasController: controller !== null && controller !== undefined
     readonly property var slotChoices: [
         {index:0, controller: controller},
         {index:1, controller: controller},
@@ -26,7 +27,7 @@ Item {
     ColumnLayout {
         anchors.fill: parent
         spacing: 3
-        visible: !root.controller.pickerOpen
+        visible: root.hasController && !root.controller.pickerOpen
 
         RowLayout {
             Layout.fillWidth: true
@@ -37,11 +38,13 @@ Item {
 
             Label {
                 Layout.fillWidth: true
-                text: root.controller.customKeyStore.error.length > 0
+                text: !root.hasController ? ""
+                      : root.controller.customKeyStore.error.length > 0
                       ? root.controller.customKeyStore.error
                       : root.controller.editMode ? "SELECT A SLOT" : "9 CUSTOM KEYS"
-                color: root.controller.customKeyStore.error.length > 0
-                       ? "#ff6d91" : root.controller.appearanceStore.primary
+                color: root.hasController && root.controller.customKeyStore.error.length > 0
+                       ? "#ff6d91"
+                       : root.hasController ? root.controller.appearanceStore.primary : "#48f3ff"
                 font.pixelSize: 9
                 font.bold: true
                 style: Text.Outline
@@ -51,27 +54,33 @@ Item {
             KeyCap {
                 Layout.preferredWidth: 78
                 Layout.preferredHeight: 16
-                visible: root.controller.editMode
+                visible: root.hasController && root.controller.editMode
                 compact: true
-                showBorders: root.controller.appearanceStore.keyBordersVisible
+                showBorders: root.hasController ? root.controller.appearanceStore.keyBordersVisible : true
                 keyLabel: "CANCEL"
                 accent: "#ff6d91"
                 toolTipText: "Discard assignment changes"
-                onClicked: root.controller.cancelEditing()
+                onClicked: {
+                    if (root.hasController) root.controller.cancelEditing()
+                }
             }
 
             KeyCap {
                 Layout.preferredWidth: 54
                 Layout.preferredHeight: 16
+                visible: root.hasController
                 compact: true
-                showBorders: root.controller.appearanceStore.keyBordersVisible
-                keyLabel: root.controller.editMode ? "SAVE" : "SET"
-                accent: root.controller.editMode
-                        ? "#72ff9f" : root.controller.appearanceStore.secondary
-                toolTipText: root.controller.editMode
+                showBorders: root.hasController ? root.controller.appearanceStore.keyBordersVisible : true
+                keyLabel: root.hasController && root.controller.editMode ? "SAVE" : "SET"
+                accent: root.hasController && root.controller.editMode
+                        ? "#72ff9f"
+                        : root.hasController ? root.controller.appearanceStore.secondary : "#ef64ff"
+                toolTipText: root.hasController && root.controller.editMode
                              ? "Save all custom-key assignments"
                              : "Enter custom-key assignment mode"
-                onClicked: root.controller.toggleSetMode()
+                onClicked: {
+                    if (root.hasController) root.controller.toggleSetMode()
+                }
             }
         }
 
@@ -85,7 +94,7 @@ Item {
             columnSpacing: 5
 
             Repeater {
-                model: root.slotChoices
+                model: root.hasController ? root.slotChoices : []
 
                 KeyCap {
                     id: customSlotKey
@@ -94,30 +103,37 @@ Item {
 
                     readonly property int slotIndex: modelData.index
                     readonly property var controller: modelData.controller
-                    property var assignment: controller.editMode
+                    readonly property bool hasController: controller !== null && controller !== undefined
+                    property var assignment: customSlotKey.hasController && controller.editMode
                                              ? controller.draftAssignments[slotIndex]
-                                             : controller.customKeyStore.assignments[slotIndex]
+                                             : customSlotKey.hasController
+                                               ? controller.customKeyStore.assignments[slotIndex] : null
 
                     Layout.fillWidth: true
                     Layout.fillHeight: true
-                    showBorders: customSlotKey.controller.appearanceStore.keyBordersVisible
+                    showBorders: customSlotKey.hasController
+                                 ? customSlotKey.controller.appearanceStore.keyBordersVisible : true
                     keyLabel: customSlotKey.assignment && customSlotKey.assignment.label
                               ? customSlotKey.assignment.label : "＋"
                     keyIcon: customSlotKey.assignment && customSlotKey.assignment.icon
                              ? customSlotKey.assignment.icon : ""
-                    accent: customSlotKey.controller.editMode
+                    accent: customSlotKey.hasController
+                            && customSlotKey.controller.editMode
                             && customSlotKey.controller.selectedSlot === customSlotKey.slotIndex
                             ? customSlotKey.controller.appearanceStore.secondary
-                            : customSlotKey.controller.appearanceStore.primary
-                    toolTipText: customSlotKey.controller.editMode
+                            : customSlotKey.hasController
+                              ? customSlotKey.controller.appearanceStore.primary : "#48f3ff"
+                    toolTipText: customSlotKey.hasController && customSlotKey.controller.editMode
                                  ? "Assign slot " + (customSlotKey.slotIndex + 1) + "; hold to clear"
                                  : (customSlotKey.assignment
                                     ? customSlotKey.assignment.description : "Unassigned")
                     toolTipIcon: customSlotKey.assignment && customSlotKey.assignment.icon
                                  ? customSlotKey.assignment.icon : ""
-                    repeatEnabled: !customSlotKey.controller.editMode
+                    repeatEnabled: customSlotKey.hasController
+                                   && !customSlotKey.controller.editMode
                                    && customSlotKey.controller.repeatableAssignment(customSlotKey.assignment)
                     onClicked: {
+                        if (!customSlotKey.hasController) return
                         if (customSlotKey.controller.editMode) {
                             customSlotKey.controller.selectedSlot = customSlotKey.slotIndex
                             customSlotKey.controller.pickerOpen = true
@@ -127,7 +143,7 @@ Item {
                         }
                     }
                     onPressAndHold: {
-                        if (customSlotKey.controller.editMode)
+                        if (customSlotKey.hasController && customSlotKey.controller.editMode)
                             customSlotKey.controller.clearSlot(customSlotKey.slotIndex)
                     }
                 }

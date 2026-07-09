@@ -17,7 +17,7 @@ Window {
     required property var surfaceController
     required property bool suppressInitialSetup
 
-    readonly property string appVersion: "0.2.2"
+    readonly property string appVersion: "0.3.0"
     property bool portalBusy: inputController.backendStatus.indexOf("Requesting") === 0
                               || inputController.backendStatus.indexOf("Waiting") === 0
 

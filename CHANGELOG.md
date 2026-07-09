@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.3.0 - 2026-07-09
+
+Minor release for public-project polish.
+
+### Fixed
+
+- Removed repeated `DeveloperCustomPage` QML warnings caused by transient null
+  controller bindings while the custom-key picker is created.
+
+### Changed
+
+- Refreshed the README introduction and install guidance to better explain
+  IMBOARD's purpose, portal-based input path, and GitHub-release distribution.
+
 ## 0.2.2 - 2026-07-07
 
 Patch release for QML lint cleanup and release polish.
