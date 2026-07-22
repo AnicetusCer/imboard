@@ -42,6 +42,19 @@ private slots:
         QVERIFY(!backend.setupComplete());
     }
 
+    void waitsForUnavailablePortalDuringRestore()
+    {
+        QSettings settings;
+        settings.clear();
+        settings.setValue(QStringLiteral("portal/setupComplete"), true);
+        settings.setValue(QStringLiteral("portal/restoreToken"), QStringLiteral("secret-token"));
+
+        PortalInputBackend backend;
+        backend.restoreIfConfigured();
+        QVERIFY(!backend.ready());
+        QCOMPARE(backend.status(), QStringLiteral("Waiting for desktop portal"));
+    }
+
     void reportsPermissionRemovalFailure()
     {
         QTemporaryDir directory;

@@ -38,6 +38,12 @@ Each portal request has a two-minute timeout. Permission state is considered
 configured only when both the setup marker and a non-empty restore token were
 saved successfully.
 
+The desktop portal can be stopped and replaced while SteamOS switches between
+Gaming Mode and Desktop Mode. Imboard watches the portal's session-bus owner,
+abandons handles belonging to the vanished service, and retries restoration
+after the replacement service has stabilized. The saved restore token is kept;
+a portal restart is not treated as permission revocation.
+
 The UI talks only to `InputController`, which accepts three action types:
 
 - `text`: commit Unicode text.

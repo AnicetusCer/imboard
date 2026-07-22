@@ -3,7 +3,7 @@
 
 cmake_minimum_required(VERSION 3.21)
 
-project(imboard VERSION 0.4.1 LANGUAGES CXX)
+project(imboard VERSION 0.4.2 LANGUAGES CXX)
 
 include(CTest)
 
@@ -205,7 +205,9 @@ if(BUILD_TESTING)
     target_include_directories(portalinputbackend-test PRIVATE src)
     target_link_libraries(portalinputbackend-test PRIVATE Qt6::Core Qt6::DBus Qt6::Test)
 
-    add_test(NAME portal-permission-forget COMMAND portalinputbackend-test)
+    find_program(DBUS_RUN_SESSION_EXECUTABLE dbus-run-session REQUIRED)
+    add_test(NAME portal-permission-forget
+             COMMAND ${DBUS_RUN_SESSION_EXECUTABLE} -- $<TARGET_FILE:portalinputbackend-test>)
     set_tests_properties(portal-permission-forget PROPERTIES
         ENVIRONMENT "XDG_CONFIG_HOME=${CMAKE_CURRENT_BINARY_DIR}/test-config-portal"
         TIMEOUT 5
@@ -228,15 +230,17 @@ if(BUILD_TESTING)
     )
 
     add_test(NAME imboard-qml-smoke
-             COMMAND bash ${CMAKE_CURRENT_SOURCE_DIR}/tests/qml_smoke.sh
-                     $<TARGET_FILE:imboard>)
+             COMMAND ${DBUS_RUN_SESSION_EXECUTABLE} --
+                     bash ${CMAKE_CURRENT_SOURCE_DIR}/tests/qml_smoke.sh
+                          $<TARGET_FILE:imboard>)
     set_tests_properties(imboard-qml-smoke PROPERTIES
         TIMEOUT 5
     )
 
     add_test(NAME imboard-lifecycle
-             COMMAND bash ${CMAKE_CURRENT_SOURCE_DIR}/tests/lifecycle.sh
-                     $<TARGET_FILE:imboard>)
+             COMMAND ${DBUS_RUN_SESSION_EXECUTABLE} --
+                     bash ${CMAKE_CURRENT_SOURCE_DIR}/tests/lifecycle.sh
+                          $<TARGET_FILE:imboard>)
     set_tests_properties(imboard-lifecycle PROPERTIES TIMEOUT 15)
 
 endif()

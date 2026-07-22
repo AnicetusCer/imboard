@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.4.2 - 2026-07-22
+
+Patch release for portal recovery across SteamOS session transitions.
+
+### Fixed
+
+- Wait for the replacement desktop portal to become stable before restoring
+  saved keyboard access after returning from Gaming Mode.
+- Automatically reconnect when the desktop portal is restarted instead of
+  timing out into a manual repair state.
+- Temporarily hide Imboard while a system permission dialog is expected so the
+  compositor dialog cannot be obscured by the always-on-top keyboard.
+- Isolate lifecycle and QML smoke tests from a live Imboard session's D-Bus
+  single-instance name.
+
 ## 0.4.1 - 2026-07-22
 
 Patch release for session-transition reliability.

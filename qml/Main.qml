@@ -17,7 +17,7 @@ Window {
     required property var surfaceController
     required property bool suppressInitialSetup
 
-    readonly property string appVersion: "0.4.1"
+    readonly property string appVersion: "0.4.2"
     readonly property int customPadKeyCount: Math.max(1, Math.min(16, appearanceStore.customPadKeyCount))
     readonly property int customPadColumns: appearanceStore.customPadColumns > 0
                                             ? Math.min(appearanceStore.customPadColumns,
@@ -35,6 +35,20 @@ Window {
     property int savedCompactPadHeight: 0
     property bool portalBusy: inputController.backendStatus.indexOf("Requesting") === 0
                               || inputController.backendStatus.indexOf("Waiting") === 0
+    property bool restoreVisibilityAfterPortalPrompt: false
+
+    function updatePortalPromptVisibility() {
+        const systemPromptExpected = inputController.backendStatus === "Waiting for permission"
+        if (systemPromptExpected) {
+            if (visible) {
+                restoreVisibilityAfterPortalPrompt = true
+                hide()
+            }
+        } else if (restoreVisibilityAfterPortalPrompt && !portalBusy) {
+            restoreVisibilityAfterPortalPrompt = false
+            show()
+        }
+    }
 
     function showRequiredSetup() {
         if (visible && inputController.setupRequired && !suppressInitialSetup
@@ -111,6 +125,7 @@ Window {
     Connections {
         target: root.inputController
         function onBackendReadyChanged() {
+            root.updatePortalPromptVisibility()
             if (root.inputController.backendReady) {
                 portalExplanationPopup.close()
                 root.showStartupPrompt()

@@ -26,7 +26,7 @@ current implementation rather than future plans.
 | `compatibilitystore.*` | One-time non-KDE session warning | `compatibilitystore-test` |
 | `customkeystore.*` | Validation and persistence of sixteen assignments | `customkeystore-test` |
 | `inputcontroller.*` | Public action API and keysym mapping | QML smoke, manual input tests |
-| `portalinputbackend.*` | Portal state machine and safe key delivery | `portalinputbackend-test` |
+| `portalinputbackend.*` | Portal state machine, service-restart recovery, and safe key delivery | `portalinputbackend-test` |
 | `keyboardlayoutstore.*` | Layout resource loading and normalization | `keyboardlayoutstore-test` |
 | `surfacecontroller.*` | Layer-shell setup, ghost move, resize, position | lifecycle, QML smoke |
 | `startupmanager.*` | Background portal or native autostart entry | `startupmanager-test` |

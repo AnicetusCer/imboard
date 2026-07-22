@@ -4,10 +4,13 @@
 #include "portalinputbackend.h"
 
 #include <QDBusConnection>
+#include <QDBusConnectionInterface>
 #include <QDBusInterface>
 #include <QDBusMessage>
 #include <QDBusObjectPath>
 #include <QDBusPendingCall>
+#include <QDBusReply>
+#include <QDBusServiceWatcher>
 #include <QSettings>
 #include <QUuid>
 
@@ -36,6 +39,21 @@ PortalInputBackend::PortalInputBackend(QObject *parent)
     connect(&m_requestTimer, &QTimer::timeout, this, [this]() {
         setError(QStringLiteral("The keyboard permission request timed out"));
     });
+
+    m_reconnectTimer.setSingleShot(true);
+    m_reconnectTimer.setInterval(1500);
+    connect(&m_reconnectTimer, &QTimer::timeout,
+            this, &PortalInputBackend::beginConnection);
+
+    auto *watcher = new QDBusServiceWatcher(
+        QString::fromLatin1(Service), QDBusConnection::sessionBus(),
+        QDBusServiceWatcher::WatchForRegistration
+            | QDBusServiceWatcher::WatchForUnregistration,
+        this);
+    connect(watcher, &QDBusServiceWatcher::serviceRegistered,
+            this, &PortalInputBackend::handlePortalServiceRegistered);
+    connect(watcher, &QDBusServiceWatcher::serviceUnregistered,
+            this, &PortalInputBackend::handlePortalServiceUnregistered);
 }
 
 PortalInputBackend::~PortalInputBackend()
@@ -66,7 +84,26 @@ bool PortalInputBackend::setupComplete() const
 
 void PortalInputBackend::connectPortal()
 {
-    if (m_stage != Stage::Idle && m_stage != Stage::Error) return;
+    if (m_stage != Stage::Idle && m_stage != Stage::Waiting && m_stage != Stage::Error)
+        return;
+    m_connectionWanted = true;
+    if (!portalServiceAvailable()) {
+        waitForPortalService();
+        return;
+    }
+    beginConnection();
+}
+
+void PortalInputBackend::beginConnection()
+{
+    if (!m_connectionWanted || m_stage == Stage::Creating || m_stage == Stage::Selecting
+        || m_stage == Stage::Starting || m_stage == Stage::Ready) {
+        return;
+    }
+    if (!portalServiceAvailable()) {
+        waitForPortalService();
+        return;
+    }
     QVariantMap options{
         {QStringLiteral("handle_token"), token()},
         {QStringLiteral("session_handle_token"), token()},
@@ -79,17 +116,74 @@ void PortalInputBackend::connectPortal()
 void PortalInputBackend::restoreIfConfigured()
 {
     if (setupComplete()) {
-        connectPortal();
+        m_connectionWanted = true;
+        waitForPortalService();
+        if (portalServiceAvailable()) scheduleReconnect();
     }
 }
 
 void PortalInputBackend::disconnectPortal()
 {
+    m_connectionWanted = false;
+    m_reconnectTimer.stop();
     closePortalHandles();
     const bool changed = m_stage != Stage::Idle;
     m_stage = Stage::Idle;
     m_status = QStringLiteral("Disconnected");
     if (changed) emit stateChanged();
+}
+
+bool PortalInputBackend::portalServiceAvailable() const
+{
+    QDBusConnectionInterface *interface = QDBusConnection::sessionBus().interface();
+    if (!interface) return false;
+    const QDBusReply<bool> reply = interface->isServiceRegistered(
+        QString::fromLatin1(Service));
+    return reply.isValid() && reply.value();
+}
+
+void PortalInputBackend::scheduleReconnect()
+{
+    if (!m_connectionWanted || m_reconnectTimer.isActive()) return;
+    m_reconnectTimer.start();
+}
+
+void PortalInputBackend::handlePortalServiceRegistered()
+{
+    if (!m_connectionWanted) return;
+    waitForPortalService();
+    scheduleReconnect();
+}
+
+void PortalInputBackend::handlePortalServiceUnregistered()
+{
+    if (!m_connectionWanted) return;
+    waitForPortalService();
+}
+
+void PortalInputBackend::waitForPortalService()
+{
+    m_reconnectTimer.stop();
+    abandonPortalHandles();
+    const bool changed = m_stage != Stage::Waiting
+                         || m_status != QStringLiteral("Waiting for desktop portal");
+    m_stage = Stage::Waiting;
+    m_status = QStringLiteral("Waiting for desktop portal");
+    if (changed) emit stateChanged();
+}
+
+void PortalInputBackend::abandonPortalHandles()
+{
+    m_requestTimer.stop();
+    if (!m_requestPath.isEmpty()) {
+        if (!QDBusConnection::sessionBus().disconnect(
+                Service, m_requestPath, RequestInterface, QStringLiteral("Response"), this,
+                SLOT(handleResponse(uint,QVariantMap)))) {
+            qWarning() << "Could not detach from the interrupted portal request";
+        }
+        m_requestPath.clear();
+    }
+    m_sessionPath.clear();
 }
 
 void PortalInputBackend::closePortalHandles()
@@ -233,6 +327,10 @@ bool PortalInputBackend::beginRequest(const QString &method, const QVariantList 
     QDBusInterface portal(Service, ObjectPath, Interface, QDBusConnection::sessionBus());
     QDBusMessage reply = portal.callWithArgumentList(QDBus::Block, method, arguments);
     if (reply.type() == QDBusMessage::ErrorMessage || reply.arguments().isEmpty()) {
+        if (m_connectionWanted && !portalServiceAvailable()) {
+            waitForPortalService();
+            return false;
+        }
         setError(reply.errorMessage().isEmpty() ? QStringLiteral("Portal is unavailable")
                                                 : reply.errorMessage());
         return false;
@@ -252,6 +350,8 @@ bool PortalInputBackend::beginRequest(const QString &method, const QVariantList 
 
 void PortalInputBackend::setError(const QString &message)
 {
+    m_connectionWanted = false;
+    m_reconnectTimer.stop();
     closePortalHandles();
     m_stage = Stage::Error;
     m_status = message;

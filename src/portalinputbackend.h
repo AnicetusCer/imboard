@@ -33,11 +33,18 @@ signals:
 
 private slots:
     void handleResponse(uint response, const QVariantMap &results);
+    void handlePortalServiceRegistered();
+    void handlePortalServiceUnregistered();
 
 private:
-    enum class Stage { Idle, Creating, Selecting, Starting, Ready, Error };
+    enum class Stage { Idle, Waiting, Creating, Selecting, Starting, Ready, Error };
     bool beginRequest(const QString &method, const QVariantList &arguments, Stage stage);
     bool sendKeysym(quint32 keysym, bool pressed);
+    bool portalServiceAvailable() const;
+    void beginConnection();
+    void scheduleReconnect();
+    void waitForPortalService();
+    void abandonPortalHandles();
     void closePortalHandles();
     void setError(const QString &message);
     static QString token();
@@ -47,4 +54,6 @@ private:
     QString m_requestPath;
     QString m_sessionPath;
     QTimer m_requestTimer;
+    QTimer m_reconnectTimer;
+    bool m_connectionWanted = false;
 };

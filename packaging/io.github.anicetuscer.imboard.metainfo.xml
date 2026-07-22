@@ -69,6 +69,15 @@
   <content_rating type="oars-1.1" />
 
   <releases>
+    <release version="0.4.2" date="2026-07-22">
+      <description>
+        <p>
+          Patch release that waits for and reconnects to a replacement desktop
+          portal after SteamOS session transitions, and keeps system permission
+          dialogs visible above Imboard.
+        </p>
+      </description>
+    </release>
     <release version="0.4.1" date="2026-07-22">
       <description>
         <p>
