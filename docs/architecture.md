@@ -56,7 +56,7 @@ clipboard.
 
 Built-in layouts ship as read-only JSON resources. User preferences and the
 portal restore token use Qt `QSettings`, under organization `AnicetusCer` and
-application `Imboard`. `CustomKeyStore` normalizes all nine assignments before
+application `Imboard`. `CustomKeyStore` normalizes all sixteen assignments before
 persisting them; invalid actions become empty slots rather than being loaded
 partially. Native autostart desktop-file writes use `QSaveFile`.
 
@@ -64,6 +64,20 @@ Permission, custom-key, keyboard-layout, and startup persistence failures are
 reported to the UI and do not masquerade as success. Appearance and window
 geometry remain non-critical: their delayed writes report failures to the log
 without disabling keyboard input.
+
+## Process lifecycle
+
+Imboard owns its application ID on the session D-Bus for the lifetime of the
+primary process. This gives the single-instance guard a compositor-independent
+liveness signal that is released automatically if the process crashes. A local
+socket carries show, toggle, and quit commands, while a long-lived lock protects
+socket creation from concurrent launches.
+
+Flatpak processes use separate PID namespaces and can each appear as the same
+PID, so a lock file alone cannot reliably identify a crashed instance. After a
+control request fails, a new process may replace an abandoned lock and socket
+only if it first acquires the application D-Bus name. If a live current instance
+owns that name, recovery is refused.
 
 ## Code boundaries
 

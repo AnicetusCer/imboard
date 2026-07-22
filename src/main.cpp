@@ -60,7 +60,7 @@ int main(int argc, char *argv[])
         return 0;
     }
 
-    if (toggleLaunch && InstanceController::sendCommand(QStringLiteral("TOGGLE"), 250)) {
+    if (toggleLaunch && InstanceController::sendCommand(QStringLiteral("TOGGLE"))) {
         return 0;
     }
 

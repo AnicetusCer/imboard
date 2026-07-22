@@ -27,7 +27,7 @@ In practice, that means:
 
 ## Status
 
-Current release: `0.4.0`.
+Current release: `0.4.1`.
 
 IMBOARD presents required keyboard-access setup on first visible launch. The
 standard desktop portal grants keyboard-only control and returns a restore token
@@ -77,12 +77,12 @@ It installs into your user account.
    sudo pacman -S flatpak
    ```
 
-2. Download `imboard-0.4.0-x86_64.flatpak` from the GitHub release.
+2. Download `imboard-0.4.1-x86_64.flatpak` from the GitHub release.
 
 3. Install it:
 
    ```sh
-   flatpak install --user ./imboard-0.4.0-x86_64.flatpak
+   flatpak install --user ./imboard-0.4.1-x86_64.flatpak
    ```
 
 4. Launch IMBOARD from the KDE app launcher, or run:
@@ -92,7 +92,10 @@ It installs into your user account.
    ```
 
 The release bundle is currently built for `x86_64`. Users on other
-architectures can build from source.
+architectures can build from source. A standalone `.flatpak` bundle does not
+provide an automatic update source, so users must install a newer release
+bundle when one is published. A signed Flatpak repository is planned to provide
+normal Discover and `flatpak update` updates without weakening package trust.
 
 ### Build And Install From Source
 
@@ -119,7 +122,7 @@ not need root once Flatpak and `flatpak-builder` are installed.
    ```sh
    git clone https://github.com/AnicetusCer/imboard.git
    cd imboard
-   git checkout v0.4.0
+   git checkout v0.4.1
    ```
 
 3. Build and install the user Flatpak:
@@ -279,7 +282,7 @@ that use has been approved. See [IMBOARD name and branding](TRADEMARKS.md).
 ## Roadmap
 
 - [x] Safe movable/resizable window lifecycle harness
-- [x] Nine-key programmable bank with transactional Set mode
+- [x] Sixteen-key programmable bank with transactional Set mode
 - [x] Swipeable developer pad with numeric, code, F-key and combo pages
 - [x] Add touch-friendly custom-key picker categories
 - [x] Add persistent regional keyboard layout selection
@@ -290,6 +293,8 @@ that use has been approved. See [IMBOARD name and branding](TRADEMARKS.md).
 - [x] Editable user page with validated persistent configuration writes
 - [x] Flatpak-compatible run-at-login through the Background portal
 - [x] Flatpak packaging and SteamOS integration tests
+- [ ] Publish a signed Flatpak repository for Discover and `flatpak update`
+      updates
 - [x] Fedora KDE Wayland validation
 
 ## Safety

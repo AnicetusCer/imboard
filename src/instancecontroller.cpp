@@ -3,6 +3,9 @@
 
 #include "instancecontroller.h"
 
+#include "appmetadata.h"
+
+#include <QDBusConnection>
 #include <QDebug>
 #include <QDir>
 #include <QFile>
@@ -38,7 +41,15 @@ InstanceController::InstanceController(QObject *parent)
 {
 }
 
-InstanceController::~InstanceController() = default;
+InstanceController::~InstanceController()
+{
+    if (m_busServiceRegistered) {
+        if (!QDBusConnection::sessionBus().unregisterService(
+                QString::fromUtf8(Imboard::AppId))) {
+            qWarning() << "Could not release the Imboard session-bus name";
+        }
+    }
+}
 
 bool InstanceController::start()
 {
@@ -50,11 +61,41 @@ bool InstanceController::start()
         return false;
     }
 
+    QDBusConnection sessionBus = QDBusConnection::sessionBus();
+    if (sessionBus.isConnected()) {
+        m_busServiceRegistered = sessionBus.registerService(
+            QString::fromUtf8(Imboard::AppId));
+        if (!m_busServiceRegistered) {
+            m_error = QStringLiteral("Another Imboard instance is already running");
+            return false;
+        }
+    } else {
+        qWarning() << "The session bus is unavailable; stale-instance recovery is disabled";
+    }
+
     m_lock = std::make_unique<QLockFile>(lockFilePath);
     m_lock->setStaleLockTime(0);
     if (!m_lock->tryLock(0)) {
-        m_error = QStringLiteral("The Imboard instance lock is already held or unavailable");
-        return false;
+        const bool recoverable = m_busServiceRegistered
+                                 && m_lock->error() == QLockFile::LockFailedError;
+        if (!recoverable) {
+            m_error = QStringLiteral("The Imboard instance lock is already held or unavailable");
+            return false;
+        }
+
+        // Flatpak gives each sandbox its own PID namespace, so every Imboard
+        // process can be recorded as PID 2. QLockFile therefore cannot tell a
+        // crashed Flatpak process from the new process. Owning the application
+        // D-Bus name proves that no current Imboard instance using this guard is
+        // alive, so it is safe to replace the abandoned long-lived lock.
+        const bool removedLock = m_lock->removeStaleLockFile();
+        if (!m_lock->tryLock(0)) {
+            m_error = QStringLiteral("Could not recover the abandoned Imboard instance lock");
+            return false;
+        }
+        qWarning() << "Recovered abandoned Imboard runtime state"
+                   << (removedLock ? QStringLiteral("after removing its stale lock")
+                                   : QStringLiteral("after its stale lock disappeared"));
     }
 
     // removeServer() also returns false when there is simply no stale socket.

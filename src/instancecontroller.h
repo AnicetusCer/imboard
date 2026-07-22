@@ -35,5 +35,6 @@ private:
 
     std::unique_ptr<QLockFile> m_lock;
     std::unique_ptr<QLocalServer> m_server;
+    bool m_busServiceRegistered = false;
     QString m_error;
 };

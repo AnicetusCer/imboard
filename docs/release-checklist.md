@@ -82,7 +82,9 @@ Test on the Steam Deck desktop session:
    - minimise hides the keyboard;
    - tray icon shows and hides the keyboard;
    - tray quit exits the process.
-7. Confirm typing in at least Kate and Zed:
+7. Enter Gaming Mode, return to Desktop Mode, and confirm Imboard starts or
+   toggles normally without manual runtime-file cleanup.
+8. Confirm typing in at least Kate and Zed:
    - normal letters;
    - Backspace hold-repeat;
    - common symbols;

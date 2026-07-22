@@ -7,7 +7,8 @@ current implementation rather than future plans.
 
 1. `main.cpp` selects layer-shell before Qt creates the first window, handles
    `--toggle`, `--quit`, and single-instance startup, then exposes controllers
-   to QML.
+   to QML. The primary process holds the application D-Bus name as its liveness
+   lease and accepts window commands through a private local socket.
 2. `Main.qml` composes the keyboard surface and focused popup components.
 3. `AlphaBoard.qml` and `DeveloperPad.qml` call `InputController` with text,
    named-key, or chord actions.
@@ -23,13 +24,13 @@ current implementation rather than future plans.
 | `main.cpp` | Process bootstrap and controller-to-QML wiring | lifecycle, QML smoke |
 | `appearancestore.*` | Palette, opacity, and pad-side persistence | `appearancestore-test` |
 | `compatibilitystore.*` | One-time non-KDE session warning | `compatibilitystore-test` |
-| `customkeystore.*` | Validation and persistence of nine assignments | `customkeystore-test` |
+| `customkeystore.*` | Validation and persistence of sixteen assignments | `customkeystore-test` |
 | `inputcontroller.*` | Public action API and keysym mapping | QML smoke, manual input tests |
 | `portalinputbackend.*` | Portal state machine and safe key delivery | `portalinputbackend-test` |
 | `keyboardlayoutstore.*` | Layout resource loading and normalization | `keyboardlayoutstore-test` |
 | `surfacecontroller.*` | Layer-shell setup, ghost move, resize, position | lifecycle, QML smoke |
 | `startupmanager.*` | Background portal or native autostart entry | `startupmanager-test` |
-| `instancecontroller.*` | Single-instance lock and local commands | lifecycle |
+| `instancecontroller.*` | D-Bus liveness lease, crash recovery, single-instance lock, and local commands | lifecycle |
 | `signalhandler.*` | SIGINT/SIGTERM bridge into Qt shutdown | lifecycle |
 | `smoketestcontroller.*` | Non-interactive QML geometry choreography | QML smoke |
 

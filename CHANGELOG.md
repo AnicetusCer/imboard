@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.4.1 - 2026-07-22
+
+Patch release for session-transition reliability.
+
+### Fixed
+
+- Recover abandoned single-instance lock and socket state after an abrupt
+  compositor, sandbox, or process shutdown.
+- Use the application session-bus name as a reliable liveness lease across
+  Flatpak PID namespaces.
+- Allow more time for a running instance to answer launcher toggle requests.
+- Correct custom-key picker delegate sizing so QML lint completes without
+  property warnings.
+
 ## 0.4.0 - 2026-07-09
 
 Minor release for custom pad only mode.

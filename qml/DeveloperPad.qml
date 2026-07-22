@@ -698,8 +698,8 @@ Item {
                     required property var modelData
                     readonly property var keyData: modelData.key
                     readonly property var controller: modelData.controller
-                    width: GridView.view.cellWidth
-                    height: GridView.view.cellHeight
+                    width: availableKeyGrid.cellWidth
+                    height: availableKeyGrid.cellHeight
                     KeyCap {
                         anchors.fill: parent
                         anchors.margins: 2
