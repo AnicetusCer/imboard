@@ -20,6 +20,7 @@ constexpr auto Service = "org.freedesktop.portal.Desktop";
 constexpr auto ObjectPath = "/org/freedesktop/portal/desktop";
 constexpr auto Interface = "org.freedesktop.portal.RemoteDesktop";
 constexpr auto RequestInterface = "org.freedesktop.portal.Request";
+constexpr auto SessionInterface = "org.freedesktop.portal.Session";
 
 void closePortalObject(const QString &path, const QString &interface)
 {
@@ -183,6 +184,13 @@ void PortalInputBackend::abandonPortalHandles()
         }
         m_requestPath.clear();
     }
+    if (!m_sessionPath.isEmpty()) {
+        if (!QDBusConnection::sessionBus().disconnect(
+                Service, m_sessionPath, SessionInterface, QStringLiteral("Closed"), this,
+                SLOT(handleSessionClosed()))) {
+            qWarning() << "Could not detach from the interrupted portal session";
+        }
+    }
     m_sessionPath.clear();
 }
 
@@ -199,7 +207,12 @@ void PortalInputBackend::closePortalHandles()
         m_requestPath.clear();
     }
     if (!m_sessionPath.isEmpty()) {
-        closePortalObject(m_sessionPath, QStringLiteral("org.freedesktop.portal.Session"));
+        if (!QDBusConnection::sessionBus().disconnect(
+                Service, m_sessionPath, SessionInterface, QStringLiteral("Closed"), this,
+                SLOT(handleSessionClosed()))) {
+            qWarning() << "Could not detach from the active portal session";
+        }
+        closePortalObject(m_sessionPath, QString::fromLatin1(SessionInterface));
         m_sessionPath.clear();
     }
 }
@@ -242,7 +255,7 @@ bool PortalInputBackend::tapKeysym(quint32 keysym)
 bool PortalInputBackend::pressKeysym(quint32 keysym)
 {
     if (sendKeysym(keysym, true)) return true;
-    setError(QStringLiteral("Keyboard input failed; access was disconnected"));
+    recoverSavedConnection(QStringLiteral("Keyboard input was interrupted; reconnecting"));
     return false;
 }
 
@@ -253,7 +266,7 @@ bool PortalInputBackend::releaseKeysym(quint32 keysym)
     // A missing release can leave the compositor repeating a key. Retry once;
     // if it still fails, closing the portal session releases all virtual keys.
     if (sendKeysym(keysym, false)) return true;
-    setError(QStringLiteral("Keyboard release failed; access was disconnected"));
+    recoverSavedConnection(QStringLiteral("Keyboard release was interrupted; reconnecting"));
     return false;
 }
 
@@ -278,6 +291,12 @@ void PortalInputBackend::handleResponse(uint response, const QVariantMap &result
                         ? handle.value<QDBusObjectPath>().path() : handle.toString();
         if (m_sessionPath.isEmpty()) {
             setError(QStringLiteral("Portal returned no session"));
+            return;
+        }
+        if (!QDBusConnection::sessionBus().connect(
+                Service, m_sessionPath, SessionInterface, QStringLiteral("Closed"), this,
+                SLOT(handleSessionClosed()))) {
+            setError(QStringLiteral("Could not monitor portal session"));
             return;
         }
         QVariantMap options{
@@ -331,6 +350,10 @@ bool PortalInputBackend::beginRequest(const QString &method, const QVariantList 
             waitForPortalService();
             return false;
         }
+        if (m_connectionWanted && setupComplete()) {
+            recoverSavedConnection(QStringLiteral("Desktop portal was interrupted; reconnecting"));
+            return false;
+        }
         setError(reply.errorMessage().isEmpty() ? QStringLiteral("Portal is unavailable")
                                                 : reply.errorMessage());
         return false;
@@ -346,6 +369,32 @@ bool PortalInputBackend::beginRequest(const QString &method, const QVariantList 
     m_stage = stage;
     m_requestTimer.start();
     return true;
+}
+
+void PortalInputBackend::handleSessionClosed()
+{
+    if (!m_connectionWanted) return;
+    recoverSavedConnection(QStringLiteral("Keyboard access session ended; reconnecting"));
+}
+
+void PortalInputBackend::recoverSavedConnection(const QString &message)
+{
+    const bool canRestore = setupComplete();
+    m_connectionWanted = canRestore;
+    m_reconnectTimer.stop();
+    closePortalHandles();
+    if (!canRestore) {
+        m_stage = Stage::Error;
+        m_status = message;
+        emit stateChanged();
+        return;
+    }
+
+    m_stage = Stage::Waiting;
+    m_status = message;
+    emit stateChanged();
+    if (portalServiceAvailable()) scheduleReconnect();
+    else waitForPortalService();
 }
 
 void PortalInputBackend::setError(const QString &message)

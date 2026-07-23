@@ -42,7 +42,11 @@ The desktop portal can be stopped and replaced while SteamOS switches between
 Gaming Mode and Desktop Mode. Imboard watches the portal's session-bus owner,
 abandons handles belonging to the vanished service, and retries restoration
 after the replacement service has stabilized. The saved restore token is kept;
-a portal restart is not treated as permission revocation.
+a portal restart is not treated as permission revocation. It also monitors the
+portal session's `Closed` signal and treats transport-level input failures as a
+lost session: the old session is closed to release virtual keys, then Imboard
+reconnects using the saved grant. An explicit portal denial or cancellation
+still stops automatic recovery and requires a user-initiated repair.
 
 The UI talks only to `InputController`, which accepts three action types:
 

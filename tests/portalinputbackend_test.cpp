@@ -55,6 +55,23 @@ private slots:
         QCOMPARE(backend.status(), QStringLiteral("Waiting for desktop portal"));
     }
 
+    void recoversConfiguredSessionClosure()
+    {
+        QSettings settings;
+        settings.clear();
+        settings.setValue(QStringLiteral("portal/setupComplete"), true);
+        settings.setValue(QStringLiteral("portal/restoreToken"), QStringLiteral("secret-token"));
+
+        PortalInputBackend backend;
+        backend.restoreIfConfigured();
+        QVERIFY(QMetaObject::invokeMethod(&backend, "handleSessionClosed",
+                                         Qt::DirectConnection));
+
+        QVERIFY(!backend.ready());
+        QVERIFY(backend.setupComplete());
+        QCOMPARE(backend.status(), QStringLiteral("Waiting for desktop portal"));
+    }
+
     void reportsPermissionRemovalFailure()
     {
         QTemporaryDir directory;

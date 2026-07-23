@@ -33,6 +33,7 @@ signals:
 
 private slots:
     void handleResponse(uint response, const QVariantMap &results);
+    void handleSessionClosed();
     void handlePortalServiceRegistered();
     void handlePortalServiceUnregistered();
 
@@ -46,6 +47,7 @@ private:
     void waitForPortalService();
     void abandonPortalHandles();
     void closePortalHandles();
+    void recoverSavedConnection(const QString &message);
     void setError(const QString &message);
     static QString token();
 

@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.4.3 - 2026-07-23
+
+Patch release for keyboard-session recovery.
+
+### Fixed
+
+- Monitor the portal session closing independently of the desktop portal
+  process restarting.
+- Restore keyboard access automatically after transient input or portal
+  transport failures while preserving the saved permission.
+- Close a failed session before reconnecting so virtual modifiers cannot remain
+  pressed.
+- Clarify that Ctrl+A selects all in most graphical applications but has a
+  different line-navigation meaning in terminals.
+
 ## 0.4.2 - 2026-07-22
 
 Patch release for portal recovery across SteamOS session transitions.

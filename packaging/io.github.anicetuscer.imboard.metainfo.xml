@@ -69,6 +69,15 @@
   <content_rating type="oars-1.1" />
 
   <releases>
+    <release version="0.4.3" date="2026-07-23">
+      <description>
+        <p>
+          Patch release that automatically restores saved keyboard access after
+          an input session closes or a portal transport call is interrupted,
+          and clarifies that Select All shortcuts are application-specific.
+        </p>
+      </description>
+    </release>
     <release version="0.4.2" date="2026-07-22">
       <description>
         <p>
