@@ -16,9 +16,13 @@ Item {
     property bool editMode: false
     property bool pickerOpen: false
     property int selectedSlot: -1
-    property int currentPageIndex: 0
+    property int currentPageIndex: Math.max(
+        0, Math.min(appearanceStore.developerPadPageIndex, pages.length - 1))
     property var draftAssignments: []
     property string pickerCategory: "all"
+
+    onCurrentPageIndexChanged:
+        appearanceStore.setDeveloperPadPageIndex(currentPageIndex)
 
     // Static catalog data. Keep entries declarative: executable commands are
     // intentionally outside the custom-action model.

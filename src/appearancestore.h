@@ -21,6 +21,7 @@ class AppearanceStore final : public QObject
     Q_PROPERTY(bool customPadOnlyEnabled READ customPadOnlyEnabled NOTIFY appearanceChanged)
     Q_PROPERTY(int customPadKeyCount READ customPadKeyCount NOTIFY appearanceChanged)
     Q_PROPERTY(int customPadColumns READ customPadColumns NOTIFY appearanceChanged)
+    Q_PROPERTY(int developerPadPageIndex READ developerPadPageIndex NOTIFY appearanceChanged)
 
 public:
     explicit AppearanceStore(QObject *parent = nullptr);
@@ -36,6 +37,7 @@ public:
     [[nodiscard]] bool customPadOnlyEnabled() const noexcept;
     [[nodiscard]] int customPadKeyCount() const noexcept;
     [[nodiscard]] int customPadColumns() const noexcept;
+    [[nodiscard]] int developerPadPageIndex() const noexcept;
 
     Q_INVOKABLE bool selectScheme(const QString &schemeId);
     Q_INVOKABLE void setBackdropOpacity(qreal opacity);
@@ -45,6 +47,7 @@ public:
     Q_INVOKABLE void setCustomPadOnlyEnabled(bool enabled);
     Q_INVOKABLE void setCustomPadKeyCount(int count);
     Q_INVOKABLE void setCustomPadColumns(int columns);
+    Q_INVOKABLE void setDeveloperPadPageIndex(int index);
 
 signals:
     void appearanceChanged();
@@ -61,5 +64,6 @@ private:
     bool m_customPadOnlyEnabled = false;
     int m_customPadKeyCount = 9;
     int m_customPadColumns = 0;
+    int m_developerPadPageIndex = 0;
     QTimer m_settingsSyncTimer;
 };

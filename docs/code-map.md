@@ -61,7 +61,7 @@ Qt stores application settings using organization `AnicetusCer` and application
 `Imboard`. Current keys are:
 
 - `appearance/scheme`, `appearance/backdropOpacity`,
-  `appearance/developerPadOnLeft`
+  `appearance/developerPadOnLeft`, `appearance/developerPadPageIndex`
 - `compatibility/nonKdeWarningSeen`
 - `customKeys/assignments`
 - `keyboard/layout`

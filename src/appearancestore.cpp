@@ -38,6 +38,13 @@ int boundedCustomPadColumns(int columns)
 {
     return qBound(0, columns, 4);
 }
+
+int boundedDeveloperPadPageIndex(int index)
+{
+    // QML applies the current page-count bound. This defensive upper limit
+    // keeps corrupt settings harmless without coupling C++ to the QML catalog.
+    return qBound(0, index, 255);
+}
 }
 
 AppearanceStore::AppearanceStore(QObject *parent)
@@ -63,6 +70,8 @@ AppearanceStore::AppearanceStore(QObject *parent)
         settings.value(QStringLiteral("appearance/customPadKeyCount"), 9).toInt());
     m_customPadColumns = boundedCustomPadColumns(
         settings.value(QStringLiteral("appearance/customPadColumns"), 0).toInt());
+    m_developerPadPageIndex = boundedDeveloperPadPageIndex(
+        settings.value(QStringLiteral("appearance/developerPadPageIndex"), 0).toInt());
     if (settings.status() != QSettings::NoError)
         qWarning() << "Could not read appearance settings; defaults will be used";
 }
@@ -120,6 +129,11 @@ int AppearanceStore::customPadKeyCount() const noexcept
 int AppearanceStore::customPadColumns() const noexcept
 {
     return m_customPadColumns;
+}
+
+int AppearanceStore::developerPadPageIndex() const noexcept
+{
+    return m_developerPadPageIndex;
 }
 
 bool AppearanceStore::selectScheme(const QString &schemeId)
@@ -204,6 +218,19 @@ void AppearanceStore::setCustomPadColumns(int columns)
     }
     m_customPadColumns = bounded;
     QSettings().setValue(QStringLiteral("appearance/customPadColumns"), m_customPadColumns);
+    scheduleSettingsSync();
+    emit appearanceChanged();
+}
+
+void AppearanceStore::setDeveloperPadPageIndex(int index)
+{
+    const int bounded = boundedDeveloperPadPageIndex(index);
+    if (m_developerPadPageIndex == bounded) {
+        return;
+    }
+    m_developerPadPageIndex = bounded;
+    QSettings().setValue(QStringLiteral("appearance/developerPadPageIndex"),
+                         m_developerPadPageIndex);
     scheduleSettingsSync();
     emit appearanceChanged();
 }

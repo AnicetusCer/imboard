@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.4.4 - 2026-07-23
+
+Patch release for developer-pad state persistence.
+
+### Fixed
+
+- Remember the last developer swipe-pad page across Imboard restarts and
+  SteamOS Gaming/Desktop session transitions.
+- Bound restored page values against both a defensive storage limit and the
+  current QML page catalog.
+
 ## 0.4.3 - 2026-07-23
 
 Patch release for keyboard-session recovery.

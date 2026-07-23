@@ -29,6 +29,7 @@ private slots:
         QVERIFY(!initial.customPadOnlyEnabled());
         QCOMPARE(initial.customPadKeyCount(), 9);
         QCOMPARE(initial.customPadColumns(), 0);
+        QCOMPARE(initial.developerPadPageIndex(), 0);
         QVERIFY(!initial.selectScheme(QStringLiteral("unknown")));
         QVERIFY(initial.selectScheme(QStringLiteral("red")));
         QCOMPARE(initial.primary(), QColor(QStringLiteral("#ff3b4f")));
@@ -41,6 +42,7 @@ private slots:
         initial.setCustomPadOnlyEnabled(true);
         initial.setCustomPadKeyCount(12);
         initial.setCustomPadColumns(4);
+        initial.setDeveloperPadPageIndex(5);
 
         AppearanceStore reloaded;
         QCOMPARE(reloaded.scheme(), QStringLiteral("matrix"));
@@ -51,6 +53,7 @@ private slots:
         QVERIFY(reloaded.customPadOnlyEnabled());
         QCOMPARE(reloaded.customPadKeyCount(), 12);
         QCOMPARE(reloaded.customPadColumns(), 4);
+        QCOMPARE(reloaded.developerPadPageIndex(), 5);
         reloaded.setBackdropOpacity(4.0);
         QCOMPARE(reloaded.backdropOpacity(), 1.0);
         reloaded.setCustomPadKeyCount(99);
@@ -61,6 +64,10 @@ private slots:
         QCOMPARE(reloaded.customPadColumns(), 4);
         reloaded.setCustomPadColumns(-3);
         QCOMPARE(reloaded.customPadColumns(), 0);
+        reloaded.setDeveloperPadPageIndex(999);
+        QCOMPARE(reloaded.developerPadPageIndex(), 255);
+        reloaded.setDeveloperPadPageIndex(-3);
+        QCOMPARE(reloaded.developerPadPageIndex(), 0);
     }
 };
 

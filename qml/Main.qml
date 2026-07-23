@@ -17,7 +17,7 @@ Window {
     required property var surfaceController
     required property bool suppressInitialSetup
 
-    readonly property string appVersion: "0.4.3"
+    readonly property string appVersion: "0.4.4"
     readonly property int customPadKeyCount: Math.max(1, Math.min(16, appearanceStore.customPadKeyCount))
     readonly property int customPadColumns: appearanceStore.customPadColumns > 0
                                             ? Math.min(appearanceStore.customPadColumns,
