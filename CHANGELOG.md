@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.4.5 - 2026-07-24
+
+Patch release for portal startup ordering and diagnostics.
+
+### Fixed
+
+- Wait five seconds after the desktop portal appears before automatically
+  restoring keyboard access, allowing KDE's portal backend to finish startup
+  after a Gaming Mode transition.
+- Hide Imboard and allow Wayland to commit the hidden layer before asking KDE
+  to show a permission dialog, preventing the keyboard from obscuring it.
+- Record privacy-safe portal lifecycle and failure states so a future stalled
+  restore can be distinguished from a missing system permission record.
+
 ## 0.4.4 - 2026-07-23
 
 Patch release for developer-pad state persistence.

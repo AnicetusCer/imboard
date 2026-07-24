@@ -21,6 +21,8 @@ constexpr auto ObjectPath = "/org/freedesktop/portal/desktop";
 constexpr auto Interface = "org.freedesktop.portal.RemoteDesktop";
 constexpr auto RequestInterface = "org.freedesktop.portal.Request";
 constexpr auto SessionInterface = "org.freedesktop.portal.Session";
+constexpr int PortalStabilizationDelayMs = 5000;
+constexpr int PermissionPromptClearanceDelayMs = 500;
 
 void closePortalObject(const QString &path, const QString &interface)
 {
@@ -38,13 +40,19 @@ PortalInputBackend::PortalInputBackend(QObject *parent)
     m_requestTimer.setSingleShot(true);
     m_requestTimer.setInterval(120000);
     connect(&m_requestTimer, &QTimer::timeout, this, [this]() {
+        qWarning().noquote() << "Portal request timed out while" << m_status;
         setError(QStringLiteral("The keyboard permission request timed out"));
     });
 
     m_reconnectTimer.setSingleShot(true);
-    m_reconnectTimer.setInterval(1500);
+    m_reconnectTimer.setInterval(PortalStabilizationDelayMs);
     connect(&m_reconnectTimer, &QTimer::timeout,
             this, &PortalInputBackend::beginConnection);
+
+    m_startDelayTimer.setSingleShot(true);
+    m_startDelayTimer.setInterval(PermissionPromptClearanceDelayMs);
+    connect(&m_startDelayTimer, &QTimer::timeout,
+            this, &PortalInputBackend::beginStartRequest);
 
     auto *watcher = new QDBusServiceWatcher(
         QString::fromLatin1(Service), QDBusConnection::sessionBus(),
@@ -105,6 +113,7 @@ void PortalInputBackend::beginConnection()
         waitForPortalService();
         return;
     }
+    qInfo() << "Portal state: creating keyboard session";
     QVariantMap options{
         {QStringLiteral("handle_token"), token()},
         {QStringLiteral("session_handle_token"), token()},
@@ -152,6 +161,7 @@ void PortalInputBackend::scheduleReconnect()
 void PortalInputBackend::handlePortalServiceRegistered()
 {
     if (!m_connectionWanted) return;
+    qInfo() << "Desktop portal registered; waiting for it to stabilize";
     waitForPortalService();
     scheduleReconnect();
 }
@@ -159,6 +169,7 @@ void PortalInputBackend::handlePortalServiceRegistered()
 void PortalInputBackend::handlePortalServiceUnregistered()
 {
     if (!m_connectionWanted) return;
+    qWarning() << "Desktop portal disappeared; waiting for its replacement";
     waitForPortalService();
 }
 
@@ -170,12 +181,14 @@ void PortalInputBackend::waitForPortalService()
                          || m_status != QStringLiteral("Waiting for desktop portal");
     m_stage = Stage::Waiting;
     m_status = QStringLiteral("Waiting for desktop portal");
+    if (changed) qInfo() << "Portal state:" << m_status;
     if (changed) emit stateChanged();
 }
 
 void PortalInputBackend::abandonPortalHandles()
 {
     m_requestTimer.stop();
+    m_startDelayTimer.stop();
     if (!m_requestPath.isEmpty()) {
         if (!QDBusConnection::sessionBus().disconnect(
                 Service, m_requestPath, RequestInterface, QStringLiteral("Response"), this,
@@ -197,6 +210,7 @@ void PortalInputBackend::abandonPortalHandles()
 void PortalInputBackend::closePortalHandles()
 {
     m_requestTimer.stop();
+    m_startDelayTimer.stop();
     if (!m_requestPath.isEmpty()) {
         if (!QDBusConnection::sessionBus().disconnect(
                 Service, m_requestPath, RequestInterface, QStringLiteral("Response"), this,
@@ -286,6 +300,7 @@ void PortalInputBackend::handleResponse(uint response, const QVariantMap &result
     }
 
     if (m_stage == Stage::Creating) {
+        qInfo() << "Portal state: session created";
         const QVariant handle = results.value(QStringLiteral("session_handle"));
         m_sessionPath = handle.canConvert<QDBusObjectPath>()
                         ? handle.value<QDBusObjectPath>().path() : handle.toString();
@@ -311,11 +326,14 @@ void PortalInputBackend::handleResponse(uint response, const QVariantMap &result
         beginRequest(QStringLiteral("SelectDevices"),
                      {QVariant::fromValue(QDBusObjectPath(m_sessionPath)), options}, Stage::Selecting);
     } else if (m_stage == Stage::Selecting) {
-        QVariantMap options{{QStringLiteral("handle_token"), token()}};
+        qInfo() << "Portal state: keyboard access selected";
+        m_stage = Stage::Starting;
         m_status = QStringLiteral("Waiting for permission");
         emit stateChanged();
-        beginRequest(QStringLiteral("Start"),
-                     {QVariant::fromValue(QDBusObjectPath(m_sessionPath)), QString(), options}, Stage::Starting);
+        // Hiding the layer surface is asynchronous on Wayland. Give the
+        // compositor time to commit that change before KDE maps its permission
+        // dialog, otherwise the always-on-top keyboard can obscure the dialog.
+        m_startDelayTimer.start();
     } else if (m_stage == Stage::Starting) {
         const uint devices = results.value(QStringLiteral("devices"), uint(0)).toUInt();
         if ((devices & uint(1)) == 0) {
@@ -337,8 +355,21 @@ void PortalInputBackend::handleResponse(uint response, const QVariantMap &result
         }
         m_stage = Stage::Ready;
         m_status = QStringLiteral("Connected");
+        qInfo() << "Portal state: keyboard access connected";
         emit stateChanged();
     }
+}
+
+void PortalInputBackend::beginStartRequest()
+{
+    if (!m_connectionWanted || m_stage != Stage::Starting || m_sessionPath.isEmpty())
+        return;
+
+    qInfo() << "Portal state: opening keyboard permission dialog";
+    QVariantMap options{{QStringLiteral("handle_token"), token()}};
+    beginRequest(QStringLiteral("Start"),
+                 {QVariant::fromValue(QDBusObjectPath(m_sessionPath)), QString(), options},
+                 Stage::Starting);
 }
 
 bool PortalInputBackend::beginRequest(const QString &method, const QVariantList &arguments, Stage stage)
@@ -374,6 +405,7 @@ bool PortalInputBackend::beginRequest(const QString &method, const QVariantList 
 void PortalInputBackend::handleSessionClosed()
 {
     if (!m_connectionWanted) return;
+    qWarning() << "Portal keyboard session closed; restoring saved access";
     recoverSavedConnection(QStringLiteral("Keyboard access session ended; reconnecting"));
 }
 
@@ -392,6 +424,7 @@ void PortalInputBackend::recoverSavedConnection(const QString &message)
 
     m_stage = Stage::Waiting;
     m_status = message;
+    qWarning().noquote() << "Portal state:" << message;
     emit stateChanged();
     if (portalServiceAvailable()) scheduleReconnect();
     else waitForPortalService();
@@ -404,6 +437,7 @@ void PortalInputBackend::setError(const QString &message)
     closePortalHandles();
     m_stage = Stage::Error;
     m_status = message;
+    qWarning().noquote() << "Portal error:" << message;
     emit stateChanged();
 }
 

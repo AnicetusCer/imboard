@@ -40,6 +40,7 @@ private slots:
 private:
     enum class Stage { Idle, Waiting, Creating, Selecting, Starting, Ready, Error };
     bool beginRequest(const QString &method, const QVariantList &arguments, Stage stage);
+    void beginStartRequest();
     bool sendKeysym(quint32 keysym, bool pressed);
     bool portalServiceAvailable() const;
     void beginConnection();
@@ -57,5 +58,6 @@ private:
     QString m_sessionPath;
     QTimer m_requestTimer;
     QTimer m_reconnectTimer;
+    QTimer m_startDelayTimer;
     bool m_connectionWanted = false;
 };

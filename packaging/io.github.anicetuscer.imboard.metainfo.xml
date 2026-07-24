@@ -69,6 +69,15 @@
   <content_rating type="oars-1.1" />
 
   <releases>
+    <release version="0.4.5" date="2026-07-24">
+      <description>
+        <p>
+          Patch release that waits for the KDE portal backend to stabilize
+          before restoring keyboard access, clears the keyboard layer before
+          system permission dialogs, and adds privacy-safe portal diagnostics.
+        </p>
+      </description>
+    </release>
     <release version="0.4.4" date="2026-07-23">
       <description>
         <p>

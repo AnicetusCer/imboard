@@ -48,6 +48,19 @@ lost session: the old session is closed to release virtual keys, then Imboard
 reconnects using the saved grant. An explicit portal denial or cancellation
 still stops automatic recovery and requires a user-initiated repair.
 
+SteamOS starts background applications concurrently with the portal front-end
+and KDE backend after leaving Gaming Mode. Automatic restoration therefore
+waits for a stabilization interval after the portal appears instead of treating
+its D-Bus name as proof that every backend is ready. Portal lifecycle logs record
+only state and errors; restore tokens, session paths, and typed content are not
+logged.
+
+When KDE may show a permission dialog, Imboard first announces that state and
+hides its layer surface. The portal `Start` request is delayed briefly so the
+Wayland compositor can commit the hide before mapping its own dialog. Imboard
+does not attempt to position, raise, or otherwise control the system-owned
+permission window.
+
 The UI talks only to `InputController`, which accepts three action types:
 
 - `text`: commit Unicode text.
