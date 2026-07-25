@@ -61,6 +61,12 @@ Wayland compositor can commit the hide before mapping its own dialog. Imboard
 does not attempt to position, raise, or otherwise control the system-owned
 permission window.
 
+Portal request phases that do not involve a user decision (`CreateSession` and
+`SelectDevices`) normally answer immediately. If either stalls, Imboard closes
+the abandoned request and session, waits for the portal to stabilize, and
+retries at most three times. The interactive `Start` phase retains its longer
+timeout and is never automatically retried around a permission decision.
+
 The UI talks only to `InputController`, which accepts three action types:
 
 - `text`: commit Unicode text.

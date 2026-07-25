@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.4.6 - 2026-07-25
+
+Patch release for stalled portal setup recovery.
+
+### Fixed
+
+- Detect `CreateSession` and `SelectDevices` requests that KDE's portal backend
+  accepts but never answers after a Gaming/Desktop transition.
+- Close the abandoned request and session, wait for the portal to stabilize,
+  and retry automatically up to three times.
+- Keep the interactive permission stage on its separate long timeout and never
+  retry automatically around a user consent decision.
+
 ## 0.4.5 - 2026-07-24
 
 Patch release for portal startup ordering and diagnostics.

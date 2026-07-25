@@ -33,11 +33,14 @@ signals:
 
 private slots:
     void handleResponse(uint response, const QVariantMap &results);
+    void handleRequestTimeout();
     void handleSessionClosed();
     void handlePortalServiceRegistered();
     void handlePortalServiceUnregistered();
 
 private:
+    friend class PortalInputBackendTest;
+
     enum class Stage { Idle, Waiting, Creating, Selecting, Starting, Ready, Error };
     bool beginRequest(const QString &method, const QVariantList &arguments, Stage stage);
     void beginStartRequest();
@@ -60,4 +63,5 @@ private:
     QTimer m_reconnectTimer;
     QTimer m_startDelayTimer;
     bool m_connectionWanted = false;
+    int m_requestTimeoutRetries = 0;
 };

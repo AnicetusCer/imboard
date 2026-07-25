@@ -23,6 +23,9 @@ constexpr auto RequestInterface = "org.freedesktop.portal.Request";
 constexpr auto SessionInterface = "org.freedesktop.portal.Session";
 constexpr int PortalStabilizationDelayMs = 5000;
 constexpr int PermissionPromptClearanceDelayMs = 500;
+constexpr int NonInteractiveRequestTimeoutMs = 15000;
+constexpr int PermissionRequestTimeoutMs = 120000;
+constexpr int MaximumRequestTimeoutRetries = 3;
 
 void closePortalObject(const QString &path, const QString &interface)
 {
@@ -38,11 +41,8 @@ PortalInputBackend::PortalInputBackend(QObject *parent)
     : QObject(parent)
 {
     m_requestTimer.setSingleShot(true);
-    m_requestTimer.setInterval(120000);
-    connect(&m_requestTimer, &QTimer::timeout, this, [this]() {
-        qWarning().noquote() << "Portal request timed out while" << m_status;
-        setError(QStringLiteral("The keyboard permission request timed out"));
-    });
+    connect(&m_requestTimer, &QTimer::timeout,
+            this, &PortalInputBackend::handleRequestTimeout);
 
     m_reconnectTimer.setSingleShot(true);
     m_reconnectTimer.setInterval(PortalStabilizationDelayMs);
@@ -96,6 +96,7 @@ void PortalInputBackend::connectPortal()
     if (m_stage != Stage::Idle && m_stage != Stage::Waiting && m_stage != Stage::Error)
         return;
     m_connectionWanted = true;
+    m_requestTimeoutRetries = 0;
     if (!portalServiceAvailable()) {
         waitForPortalService();
         return;
@@ -161,6 +162,7 @@ void PortalInputBackend::scheduleReconnect()
 void PortalInputBackend::handlePortalServiceRegistered()
 {
     if (!m_connectionWanted) return;
+    m_requestTimeoutRetries = 0;
     qInfo() << "Desktop portal registered; waiting for it to stabilize";
     waitForPortalService();
     scheduleReconnect();
@@ -355,9 +357,32 @@ void PortalInputBackend::handleResponse(uint response, const QVariantMap &result
         }
         m_stage = Stage::Ready;
         m_status = QStringLiteral("Connected");
+        m_requestTimeoutRetries = 0;
         qInfo() << "Portal state: keyboard access connected";
         emit stateChanged();
     }
+}
+
+void PortalInputBackend::handleRequestTimeout()
+{
+    qWarning().noquote() << "Portal request timed out while" << m_status;
+    const bool nonInteractiveStage = m_stage == Stage::Creating
+                                     || m_stage == Stage::Selecting;
+    if (nonInteractiveStage && m_connectionWanted && setupComplete()
+        && m_requestTimeoutRetries < MaximumRequestTimeoutRetries) {
+        ++m_requestTimeoutRetries;
+        qWarning() << "Retrying stalled portal setup"
+                   << m_requestTimeoutRetries << "of" << MaximumRequestTimeoutRetries;
+        recoverSavedConnection(
+            QStringLiteral("Waiting for desktop portal retry %1/%2")
+                .arg(m_requestTimeoutRetries)
+                .arg(MaximumRequestTimeoutRetries));
+        return;
+    }
+
+    setError(nonInteractiveStage
+                 ? QStringLiteral("The desktop portal did not respond")
+                 : QStringLiteral("The keyboard permission request timed out"));
 }
 
 void PortalInputBackend::beginStartRequest()
@@ -398,6 +423,9 @@ bool PortalInputBackend::beginRequest(const QString &method, const QVariantList 
         return false;
     }
     m_stage = stage;
+    m_requestTimer.setInterval(stage == Stage::Starting
+                                   ? PermissionRequestTimeoutMs
+                                   : NonInteractiveRequestTimeoutMs);
     m_requestTimer.start();
     return true;
 }

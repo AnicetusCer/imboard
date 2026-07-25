@@ -69,6 +69,15 @@
   <content_rating type="oars-1.1" />
 
   <releases>
+    <release version="0.4.6" date="2026-07-25">
+      <description>
+        <p>
+          Patch release that detects stalled non-interactive portal setup,
+          safely abandons the session, and retries after KDE stabilizes without
+          retrying around a user permission decision.
+        </p>
+      </description>
+    </release>
     <release version="0.4.5" date="2026-07-24">
       <description>
         <p>

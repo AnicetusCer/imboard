@@ -3,7 +3,7 @@
 
 cmake_minimum_required(VERSION 3.21)
 
-project(imboard VERSION 0.4.5 LANGUAGES CXX)
+project(imboard VERSION 0.4.6 LANGUAGES CXX)
 
 include(CTest)
 

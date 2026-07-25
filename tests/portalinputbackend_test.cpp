@@ -72,6 +72,44 @@ private slots:
         QCOMPARE(backend.status(), QStringLiteral("Waiting for desktop portal"));
     }
 
+    void retriesStalledNonInteractiveRestore()
+    {
+        QSettings settings;
+        settings.clear();
+        settings.setValue(QStringLiteral("portal/setupComplete"), true);
+        settings.setValue(QStringLiteral("portal/restoreToken"), QStringLiteral("secret-token"));
+
+        PortalInputBackend backend;
+        backend.m_connectionWanted = true;
+        backend.m_stage = PortalInputBackend::Stage::Selecting;
+        backend.handleRequestTimeout();
+
+        QVERIFY(!backend.ready());
+        QVERIFY(backend.m_connectionWanted);
+        QCOMPARE(backend.m_stage, PortalInputBackend::Stage::Waiting);
+        QCOMPARE(backend.m_requestTimeoutRetries, 1);
+        QCOMPARE(backend.status(), QStringLiteral("Waiting for desktop portal"));
+    }
+
+    void doesNotRetryStalledPermissionDecision()
+    {
+        QSettings settings;
+        settings.clear();
+        settings.setValue(QStringLiteral("portal/setupComplete"), true);
+        settings.setValue(QStringLiteral("portal/restoreToken"), QStringLiteral("secret-token"));
+
+        PortalInputBackend backend;
+        backend.m_connectionWanted = true;
+        backend.m_stage = PortalInputBackend::Stage::Starting;
+        backend.handleRequestTimeout();
+
+        QVERIFY(!backend.ready());
+        QVERIFY(!backend.m_connectionWanted);
+        QCOMPARE(backend.m_stage, PortalInputBackend::Stage::Error);
+        QCOMPARE(backend.status(),
+                 QStringLiteral("The keyboard permission request timed out"));
+    }
+
     void reportsPermissionRemovalFailure()
     {
         QTemporaryDir directory;
