@@ -3,7 +3,7 @@
 
 cmake_minimum_required(VERSION 3.21)
 
-project(imboard VERSION 0.4.6 LANGUAGES CXX)
+project(imboard VERSION 0.5.0 LANGUAGES CXX)
 
 include(CTest)
 
@@ -14,8 +14,17 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
 
-find_package(Qt6 6.4 REQUIRED COMPONENTS DBus Quick Qml Widgets)
+find_package(Qt6 6.4 REQUIRED COMPONENTS Concurrent DBus Multimedia Quick Qml Widgets)
 find_package(LayerShellQt QUIET)
+
+option(IMBOARD_REQUIRE_WHISPER "Fail configuration when whisper.cpp is unavailable" OFF)
+set(IMBOARD_SPEECH_MODEL_PATH "/app/share/imboard/models/ggml-small.en.bin"
+    CACHE FILEPATH "Path to the whisper.cpp model used for offline dictation")
+if(IMBOARD_REQUIRE_WHISPER)
+    find_package(whisper CONFIG REQUIRED)
+else()
+    find_package(whisper CONFIG QUIET)
+endif()
 
 qt_standard_project_setup(REQUIRES 6.4)
 
@@ -29,6 +38,8 @@ endif()
 qt_add_executable(imboard
     src/main.cpp
     src/appmetadata.h
+    src/audioconverter.cpp
+    src/audioconverter.h
     src/appearancestore.cpp
     src/appearancestore.h
     src/compatibilitystore.cpp
@@ -45,6 +56,8 @@ qt_add_executable(imboard
     src/instancecontroller.h
     src/signalhandler.cpp
     src/signalhandler.h
+    src/speechcontroller.cpp
+    src/speechcontroller.h
     src/smoketestcontroller.cpp
     src/smoketestcontroller.h
     src/startupmanager.cpp
@@ -111,7 +124,14 @@ qt_add_resources(imboard keyboard_layouts
     FILES ${KEYBOARD_LAYOUT_FILES}
 )
 
-target_link_libraries(imboard PRIVATE Qt6::DBus Qt6::Quick Qt6::Qml Qt6::Widgets)
+target_link_libraries(imboard PRIVATE
+    Qt6::Concurrent Qt6::DBus Qt6::Multimedia Qt6::Quick Qt6::Qml Qt6::Widgets)
+target_compile_definitions(imboard PRIVATE
+    IMBOARD_DEFAULT_SPEECH_MODEL="${IMBOARD_SPEECH_MODEL_PATH}")
+if(TARGET whisper)
+    target_link_libraries(imboard PRIVATE whisper)
+    target_compile_definitions(imboard PRIVATE IMBOARD_HAVE_WHISPER)
+endif()
 if(TARGET LayerShellQt::Interface)
     target_link_libraries(imboard PRIVATE LayerShellQt::Interface)
     target_compile_definitions(imboard PRIVATE IMBOARD_HAVE_LAYER_SHELL)
@@ -228,6 +248,17 @@ if(BUILD_TESTING)
         ENVIRONMENT "XDG_CONFIG_HOME=${CMAKE_CURRENT_BINARY_DIR}/test-config-input-controller"
         TIMEOUT 5
     )
+
+    qt_add_executable(audioconverter-test
+        tests/audioconverter_test.cpp
+        src/audioconverter.cpp
+        src/audioconverter.h
+    )
+    target_include_directories(audioconverter-test PRIVATE src)
+    target_link_libraries(audioconverter-test PRIVATE Qt6::Multimedia Qt6::Test)
+
+    add_test(NAME dictation-audio-conversion COMMAND audioconverter-test)
+    set_tests_properties(dictation-audio-conversion PROPERTIES TIMEOUT 5)
 
     add_test(NAME imboard-qml-smoke
              COMMAND ${DBUS_RUN_SESSION_EXECUTABLE} --

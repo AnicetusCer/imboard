@@ -92,6 +92,16 @@ Test on the Steam Deck desktop session:
    - common symbols;
    - at least one chord such as Ctrl+C or Ctrl+V;
    - at least one configured custom key.
+9. Confirm offline transcription:
+   - five consecutive record, transcribe, edit, and apply cycles complete;
+   - recording stops automatically at 60 seconds;
+   - a long transcript wraps and scrolls without clipped text;
+   - cancel discards the transcript without applying it;
+   - silence or an unavailable microphone reports an error and leaves the
+     feature ready to try again;
+   - ordinary transcribed text applies correctly in both Kate and Zed;
+   - transcription still works after returning from Gaming Mode and after a
+     reboot.
 
 ## Known release caveats
 

@@ -70,6 +70,17 @@ Item {
     function sendCharacter(key) {
         let value = key.value
         var modifiers = activeCommandModifiers()
+        if (inputBackend.localTextEditing && modifiers.length === 0) {
+            if (key.type === "letter") {
+                value = shifted !== capsLocked ? key.value.toUpperCase()
+                                               : key.value.toLowerCase()
+            } else if (shifted && key.shiftedValue) {
+                value = key.shiftedValue
+            }
+            inputBackend.sendText(value)
+            clearOneShotShift()
+            return
+        }
         if (key.type === "letter") {
             const commandModifierHeld = modifiers.length > 0
             const upperCase = commandModifierHeld ? shifted : shifted !== capsLocked

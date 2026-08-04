@@ -13,7 +13,14 @@ Imboard requests keyboard-only control through the XDG Remote Desktop portal.
 The desktop permission prompt may describe this portal family as Input Device,
 Remote Desktop, or Remote Control. Imboard requests the keyboard capability only.
 It does not request screen sharing, pointer control, touchscreen control, remote
-login, camera, location, microphone, or network access.
+login, camera, location, or network access.
+
+The offline transcription feature uses Flatpak audio access to open the
+microphone only after the user presses `TRANSCRIBE`. A visible recording state
+is shown and recording stops automatically after 60 seconds. Captured audio is
+held in memory, processed locally by the bundled Whisper `small.en` model, and
+discarded after transcription. Imboard does not save recordings or transcripts
+and does not send them over a network.
 
 ## Stored data
 
@@ -43,3 +50,4 @@ work in every application.
 
 Imboard must not log typed text contents. Diagnostic logs may record that a text,
 key, or shortcut action was requested, but not the actual text payload.
+The same rule applies to recorded audio and transcript contents.

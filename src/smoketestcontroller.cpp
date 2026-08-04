@@ -41,10 +41,19 @@ bool schedule(QGuiApplication &app, QWindow *window, AppearanceStore &appearance
     auto *developerPanel = window->findChild<QObject *>(QStringLiteral("developerPanel"));
     auto *customPadOnlyPage = window->findChild<QObject *>(QStringLiteral("customPadOnlyPage"));
     auto *customPadOnlyGrid = window->findChild<QObject *>(QStringLiteral("customPadOnlyGrid"));
+    auto *keyboardSurface =
+        window->findChild<QObject *>(QStringLiteral("keyboardSurface"));
+    auto *transcriptionStrip =
+        window->findChild<QObject *>(QStringLiteral("transcriptionStrip"));
+    auto *transcriptViewport =
+        window->findChild<QObject *>(QStringLiteral("transcriptViewport"));
+    auto *transcriptArea = window->findChild<QObject *>(QStringLiteral("transcriptArea"));
 
     if (!picker || !grid || !aboutPopup || !appearancePopup || !layoutPopup || !configPopup
         || !portalExplanationPopup || !removeAccessPopup
         || !alphaPanel || !developerPanel || !customPadOnlyPage || !customPadOnlyGrid
+        || !keyboardSurface || !transcriptionStrip || !transcriptViewport
+        || !transcriptArea
         || !invoke(picker, "open")) {
         qCritical() << "Could not open the custom-key picker during smoke test";
         return false;
@@ -183,7 +192,8 @@ bool schedule(QGuiApplication &app, QWindow *window, AppearanceStore &appearance
         if (!invoke(customPadOnlyPage, "beginEdit"))
             app.exit(14);
     });
-    QTimer::singleShot(2850, &app, [&app, &appearance, customPadOnlyPage]() {
+    QTimer::singleShot(2850, &app,
+                       [&app, &appearance, customPadOnlyPage]() {
         if (!customPadOnlyPage->property("editMode").toBool()) {
             qCritical() << "Custom-pad edit mode did not open";
             app.exit(15);
@@ -194,6 +204,49 @@ bool schedule(QGuiApplication &app, QWindow *window, AppearanceStore &appearance
             return;
         }
         appearance.setCustomPadOnlyEnabled(false);
+    });
+    QTimer::singleShot(2950, &app, [&app, window, keyboardSurface]() {
+        if (window->width() < window->minimumWidth()) {
+            qCritical() << "Full keyboard size was not restored before transcription:"
+                        << window->width() << window->minimumWidth();
+            app.exit(16);
+            return;
+        }
+        if (!invoke(keyboardSurface, "beginTranscription")) app.exit(16);
+    });
+    QTimer::singleShot(3100, &app, [transcriptArea]() {
+        const QString longTranscript =
+            QStringLiteral("A deliberately long local transcript used to verify that wrapped text "
+                           "stays clear of the scrollbar and that the final lines can scroll fully "
+                           "into view. ").repeated(8);
+        transcriptArea->setProperty("text", longTranscript);
+        transcriptArea->setProperty("cursorPosition", longTranscript.size());
+    });
+    QTimer::singleShot(3300, &app,
+                       [&app, keyboardSurface, transcriptionStrip,
+                        transcriptViewport, transcriptArea]() {
+        const qreal width = transcriptionStrip->property("width").toReal();
+        const qreal height = transcriptionStrip->property("height").toReal();
+        const qreal viewportWidth = transcriptViewport->property("width").toReal();
+        const qreal viewportHeight = transcriptViewport->property("height").toReal();
+        const qreal contentHeight = transcriptViewport->property("contentHeight").toReal();
+        const qreal editorWidth = transcriptArea->property("width").toReal();
+        const qreal editorHeight = transcriptArea->property("height").toReal();
+        if (!transcriptionStrip->property("visible").toBool()
+            || width < 600.0 || height < 70.0
+            || editorWidth < 400.0 || editorHeight < 24.0
+            || editorWidth > viewportWidth - 12.0
+            || contentHeight <= viewportHeight) {
+            qCritical() << "Transcription strip collapsed during smoke test:"
+                        << width << height << viewportWidth << viewportHeight
+                        << contentHeight << editorWidth << editorHeight;
+            app.exit(16);
+            return;
+        }
+        if (!invoke(keyboardSurface, "cancelTranscription")) {
+            app.exit(16);
+            return;
+        }
         app.quit();
     });
 

@@ -14,6 +14,24 @@
 #include <algorithm>
 #include <utility>
 
+namespace
+{
+bool hasUnsupportedTextControl(const QList<uint> &codepoints)
+{
+    return std::any_of(codepoints.cbegin(), codepoints.cend(), [](uint codepoint) {
+        return codepoint < 0x20 && codepoint != '\n'
+               && codepoint != '\r' && codepoint != '\t';
+    });
+}
+
+bool requiresUnicodePaste(const QList<uint> &codepoints)
+{
+    return std::any_of(codepoints.cbegin(), codepoints.cend(), [](uint codepoint) {
+        return codepoint > 0x7e;
+    });
+}
+}
+
 InputController::InputController(QObject *parent)
     : QObject(parent), m_portal(this)
 {
@@ -63,6 +81,25 @@ void InputController::setExperimentalUnicodeEnabled(bool enabled)
     emit experimentalUnicodeEnabledChanged();
 }
 
+bool InputController::localTextEditing() const noexcept
+{
+    return m_localTextEditing;
+}
+
+void InputController::setLocalTextEditing(bool enabled)
+{
+    if (m_localTextEditing == enabled) return;
+    m_localTextEditing = enabled;
+    emit localTextEditingChanged();
+}
+
+bool InputController::canSendText(const QString &text) const
+{
+    const QList<uint> codepoints = text.toUcs4();
+    if (hasUnsupportedTextControl(codepoints)) return false;
+    return !requiresUnicodePaste(codepoints) || m_experimentalUnicodeEnabled;
+}
+
 void InputController::connectPortal()
 {
     m_portal.connectPortal();
@@ -91,17 +128,30 @@ void InputController::sendText(const QString &text)
                                     .arg(codepoints.size() == 1 ? QString() : QStringLiteral("s"));
     qInfo().noquote() << description;
     emit actionRequested(description);
+    if (hasUnsupportedTextControl(codepoints)) {
+        qWarning() << "Rejected text containing an unsupported control character";
+        return;
+    }
+    if (m_localTextEditing) {
+        emit localTextRequested(text);
+        return;
+    }
+    const bool needsClipboardPaste = requiresUnicodePaste(codepoints);
     if (!backendReady()) return;
-    const bool needsClipboardPaste = std::any_of(codepoints.cbegin(), codepoints.cend(), [](uint codepoint) {
-        return codepoint < 0x20 || codepoint > 0x7e;
-    });
     if (needsClipboardPaste) {
         if (m_experimentalUnicodeEnabled) pasteTextViaClipboard(text);
         else qWarning() << "Rejected non-ASCII text because experimental Unicode input is disabled";
         return;
     }
-    for (uint codepoint : codepoints) {
-        const quint32 keysym = codepoint;
+    for (qsizetype index = 0; index < codepoints.size(); ++index) {
+        const uint codepoint = codepoints.at(index);
+        if (codepoint == '\r' && index + 1 < codepoints.size()
+            && codepoints.at(index + 1) == '\n') {
+            continue;
+        }
+        const quint32 keysym = codepoint == '\n' || codepoint == '\r' ? namedKeysym(QStringLiteral("Enter"))
+                               : codepoint == '\t' ? namedKeysym(QStringLiteral("Tab"))
+                                                    : codepoint;
         if (!m_portal.tapKeysym(keysym)) break;
     }
 }
@@ -114,6 +164,10 @@ void InputController::sendKey(const QString &key)
     const quint32 keysym = namedKeysym(key);
     if (keysym == 0) {
         qWarning().noquote() << "Unsupported key:" << key;
+        return;
+    }
+    if (m_localTextEditing) {
+        emit localKeyRequested(key);
         return;
     }
     if (backendReady()) m_portal.tapKeysym(keysym);
@@ -146,6 +200,10 @@ void InputController::sendChord(const QStringList &modifiers, const QString &key
     const quint32 keysym = namedKeysym(normalizedKey);
     if (keysym == 0) {
         qWarning().noquote() << "Unsupported chord key:" << key;
+        return;
+    }
+    if (m_localTextEditing) {
+        emit localChordRequested(modifiers, key);
         return;
     }
     if (!backendReady()) return;

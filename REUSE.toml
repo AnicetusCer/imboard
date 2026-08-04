@@ -30,3 +30,9 @@ path = [
 precedence = "aggregate"
 SPDX-FileCopyrightText = "Copyright 2020 Twitter, Inc and other contributors"
 SPDX-License-Identifier = "CC-BY-4.0"
+
+[[annotations]]
+path = ["packaging/whisper-model-LICENSE"]
+precedence = "override"
+SPDX-FileCopyrightText = "2022 OpenAI"
+SPDX-License-Identifier = "MIT"

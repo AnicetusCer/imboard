@@ -1,6 +1,6 @@
 # Imboard Fedora/Flatpak handover
 
-Date: 2026-07-07
+Date: 2026-08-04
 
 This document is for continuing Imboard development from a new machine/session,
 especially a Fedora KDE Wayland VM or workstation. It is intentionally safe to
@@ -10,15 +10,15 @@ keep public in the repository.
 
 - Repository: `https://github.com/AnicetusCer/imboard`
 - App ID: `io.github.anicetuscer.imboard`
-- Current release target: `0.2.1`
-- Latest GitHub release: `v0.2.1`
+- Current release target: `0.5.0`
+- Latest GitHub release: `v0.5.0`
 - Supported target: KDE Wayland
 - Validated targets: SteamOS Desktop Mode and Fedora KDE Wayland
-- Intended package route: Flatpak, preferably Flathub rather than ad-hoc tester
-  bundles
-- Current `main` and tag `v0.2.1` have been pushed.
-- The GitHub release `IMBOARD 0.2.1` has been published with the
-  `imboard-0.2.1-x86_64.flatpak` bundle.
+- Package route: Flatpak bundles published with GitHub releases; a signed
+  Flatpak repository remains a future update-path improvement.
+- Current `main` and tag `v0.5.0` have been pushed.
+- The GitHub release `IMBOARD 0.5.0` includes the
+  `imboard-0.5.0-x86_64.flatpak` bundle.
 
 Imboard is a virtual keyboard for KDE Wayland desktops. It is intended to help
 users who need regular desktop/developer keys on compact on-screen keyboards:
@@ -35,7 +35,8 @@ project scope.
 - Input is sent through the XDG Remote Desktop portal with keyboard capability
   only.
 - Do not request pointer, touchscreen, screen-cast, camera, location, network,
-  or host filesystem access.
+  or host filesystem access. Offline transcription uses audio access only for
+  an explicit, visibly indicated local recording.
 - Configurable keys are data only: text, named keys, or validated chords. They
   must not execute shell commands or arbitrary programs.
 - Keep the window non-focus-stealing:
@@ -70,6 +71,7 @@ Read these docs before changing behavior:
   - fallback X11 socket included only for Flathub's native-Wayland packaging
     rule;
   - no network permission;
+  - microphone audio used only for explicit offline transcription;
   - no host filesystem permission;
   - local control socket rejects oversized commands;
   - experimental Unicode attempts to restore previous clipboard text.
@@ -212,11 +214,11 @@ flatpak run --filesystem="$PWD" org.flatpak.Builder \
 flatpak build-bundle \
     --runtime-repo=https://dl.flathub.org/repo/flathub.flatpakrepo \
     "$PWD/flatpak-repo" \
-    "$PWD/imboard-0.2.1-x86_64.flatpak" \
+    "$PWD/imboard-0.5.0-x86_64.flatpak" \
     io.github.anicetuscer.imboard
 ```
 
-The `v0.2.1` release bundle was built successfully with this fallback path.
+Release bundles have been built successfully with this fallback path.
 
 ## Validation commands
 
@@ -248,30 +250,21 @@ On Fedora KDE, use the Fedora section above for secondary runtime validation.
 On SteamOS, use the commands in `docs/release-checklist.md` for final install
 and manual runtime validation.
 
-## Flathub direction
+## Future update direction
 
-The next major workstream should be preparing a Flathub submission.
+GitHub release bundles are the supported distribution path. A future signed
+Flatpak repository could give users normal Discover and `flatpak update`
+updates while preserving the same package trust model.
 
 Likely tasks:
 
-1. Make the GitHub repository public if it is not already public.
-   The public-facing history and `v0.2.1` tag have been prepared; see
-   `docs/public-release-audit.md`.
-2. Confirm the repository, issue tracker, AppStream URLs, and screenshot URLs
-   work publicly.
-3. Review Flathub manifest expectations:
-   - app ID is valid;
-   - licenses are correct;
-   - screenshots are reachable;
-   - no excessive sandbox permissions;
-   - release metadata is present.
-4. Confirm `v0.2.1` is present and the release asset is reachable before
-   submitting.
-5. Prepare the Flathub PR from the top-level
-   `io.github.anicetuscer.imboard.yml` manifest.
-6. Confirm whether Flathub accepts the pinned `layer-shell-qt` build module as
-   written or wants a different source reference/release tag.
-7. Re-run the full release checklist on SteamOS after any Flathub-review changes.
+1. Choose a stable HTTPS host for the OSTree repository and summary metadata.
+2. Establish offline signing and documented key-rotation and recovery steps.
+3. Publish an installable `.flatpakrepo` file and migration instructions for
+   existing bundle installs.
+4. Automate reproducible builds without placing signing secrets in CI logs or
+   repository files.
+5. Test upgrades, rollbacks, and metadata refreshes on SteamOS and Fedora KDE.
 
 Do not claim Gamescope/Gaming Mode support in Flathub metadata unless the
 project goals change and it has been explicitly tested.
@@ -295,7 +288,6 @@ Use this to restart work from another machine:
 We are continuing Imboard from https://github.com/AnicetusCer/imboard.
 Read AGENTS.md and docs/handover-wsl-flathub.md first.
 I have a Fedora KDE Wayland test system available.
-Goal: pull the current repo, validate the 0.2.1 GitHub release and
-Flathub/public-release path, and avoid runtime behavior changes unless required
-by packaging review.
+Goal: pull the current repo, validate the 0.5.0 GitHub release and Flatpak
+bundle, and avoid runtime behavior changes unless required by release testing.
 ```

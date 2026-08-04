@@ -11,6 +11,7 @@ finish-args:
   - --share=ipc
   - --socket=wayland
   - --socket=fallback-x11
+  - --socket=pulseaudio
   - --device=dri
   - --talk-name=org.kde.StatusNotifierWatcher
 
@@ -25,12 +26,55 @@ modules:
         url: https://invent.kde.org/plasma/layer-shell-qt.git
         commit: 76fbe5deb9d9545be98d1900b5d0df868616759e
 
+  - name: spirv-headers
+    buildsystem: cmake-ninja
+    config-opts:
+      - -DSPIRV_HEADERS_SKIP_EXAMPLES=ON
+      - -DSPIRV_HEADERS_SKIP_INSTALL=OFF
+      - -DCMAKE_BUILD_TYPE=Release
+    sources:
+      - type: git
+        url: https://github.com/KhronosGroup/SPIRV-Headers.git
+        commit: 2a611a970fdbc41ac2e3e328802aed9985352dca
+
+  - name: whisper-cpp
+    buildsystem: cmake-ninja
+    config-opts:
+      - -DBUILD_SHARED_LIBS=ON
+      - -DGGML_NATIVE=OFF
+      - -DGGML_VULKAN=ON
+      - -DWHISPER_BUILD_EXAMPLES=OFF
+      - -DWHISPER_BUILD_SERVER=OFF
+      - -DWHISPER_BUILD_TESTS=OFF
+      - -DWHISPER_ALL_WARNINGS=OFF
+      - -DCMAKE_BUILD_TYPE=Release
+    post-install:
+      - mkdir -p /app/bin
+      - install -Dm644 LICENSE /app/share/licenses/imboard/whisper.cpp-LICENSE
+    sources:
+      - type: git
+        url: https://github.com/ggml-org/whisper.cpp.git
+        commit: f049fff95a089aa9969deb009cdd4892b3e74916
+
+  - name: whisper-small-en-model
+    buildsystem: simple
+    build-commands:
+      - install -Dm644 ggml-small.en.bin /app/share/imboard/models/ggml-small.en.bin
+      - install -Dm644 whisper-model-LICENSE /app/share/licenses/imboard/whisper-model-LICENSE
+    sources:
+      - type: file
+        url: https://huggingface.co/ggerganov/whisper.cpp/resolve/5359861c739e955e79d9a303bcbc70fb988958b1/ggml-small.en.bin
+        sha256: c6138d6d58ecc8322097e0f987c32f1be8bb0a18532a3f88f734d1bbf9c41e5d
+      - type: file
+        path: packaging/whisper-model-LICENSE
+
   - name: imboard
     buildsystem: cmake-ninja
     config-opts:
       - -DBUILD_TESTING=OFF
+      - -DIMBOARD_REQUIRE_WHISPER=ON
       - -DCMAKE_BUILD_TYPE=Release
     sources:
       - type: git
         url: https://github.com/AnicetusCer/imboard.git
-        tag: v0.4.6
+        tag: v0.5.0

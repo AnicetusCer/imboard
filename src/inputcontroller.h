@@ -18,6 +18,8 @@ class InputController final : public QObject
     Q_PROPERTY(bool experimentalUnicodeEnabled READ experimentalUnicodeEnabled
                    WRITE setExperimentalUnicodeEnabled
                    NOTIFY experimentalUnicodeEnabledChanged)
+    Q_PROPERTY(bool localTextEditing READ localTextEditing WRITE setLocalTextEditing
+                   NOTIFY localTextEditingChanged)
 
 public:
     explicit InputController(QObject *parent = nullptr);
@@ -27,6 +29,9 @@ public:
     [[nodiscard]] bool setupRequired() const;
     [[nodiscard]] bool experimentalUnicodeEnabled() const noexcept;
     void setExperimentalUnicodeEnabled(bool enabled);
+    [[nodiscard]] bool localTextEditing() const noexcept;
+    void setLocalTextEditing(bool enabled);
+    Q_INVOKABLE bool canSendText(const QString &text) const;
 
     Q_INVOKABLE void connectPortal();
     Q_INVOKABLE void disconnectPortal();
@@ -40,6 +45,10 @@ public:
 signals:
     void backendReadyChanged();
     void experimentalUnicodeEnabledChanged();
+    void localTextEditingChanged();
+    void localTextRequested(const QString &text);
+    void localKeyRequested(const QString &key);
+    void localChordRequested(const QStringList &modifiers, const QString &key);
     void actionRequested(const QString &description);
 
 private:
@@ -48,4 +57,5 @@ private:
     static QString normalizedChordKey(const QStringList &modifiers, const QString &key);
     PortalInputBackend m_portal;
     bool m_experimentalUnicodeEnabled = false;
+    bool m_localTextEditing = false;
 };

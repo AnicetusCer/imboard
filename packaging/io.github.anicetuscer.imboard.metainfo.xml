@@ -22,6 +22,11 @@
       user-defined key actions.
     </p>
     <p>
+      Optional offline transcription records only when explicitly started,
+      processes speech locally with a bundled model, and lets the user edit the
+      result before applying it to another application.
+    </p>
+    <p>
       Imboard uses the standard XDG Remote Desktop portal to request
       keyboard-only control. It does not request screen sharing, pointer control,
       host filesystem access, or network access.
@@ -64,11 +69,29 @@
       <caption>Transparent overlay while typing in an editor</caption>
       <image>https://raw.githubusercontent.com/AnicetusCer/imboard/main/docs/screenshots/imboard-transparent-overlay.png</image>
     </screenshot>
+    <screenshot>
+      <caption>Recording speech for private offline transcription</caption>
+      <image>https://raw.githubusercontent.com/AnicetusCer/imboard/main/docs/screenshots/imboard-transcription-recording.png</image>
+    </screenshot>
+    <screenshot>
+      <caption>Reviewing transcribed text before applying it</caption>
+      <image>https://raw.githubusercontent.com/AnicetusCer/imboard/main/docs/screenshots/imboard-transcription-review.png</image>
+    </screenshot>
   </screenshots>
 
   <content_rating type="oars-1.1" />
 
   <releases>
+    <release version="0.5.0" date="2026-08-04">
+      <description>
+        <p>
+          Minor release adding private offline voice transcription with a
+          bundled Whisper small.en model, an integrated recording and editing
+          strip, a 60-second recording limit, and local Vulkan acceleration
+          with CPU fallback.
+        </p>
+      </description>
+    </release>
     <release version="0.4.6" date="2026-07-25">
       <description>
         <p>

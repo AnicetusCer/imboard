@@ -54,6 +54,55 @@ private slots:
         QVERIFY(!description.contains(QStringLiteral("private-token")));
     }
 
+    void rejectsUnsupportedTextControlCharactersBeforeInput()
+    {
+        InputController controller;
+        QSignalSpy requests(&controller, &InputController::actionRequested);
+
+        QTest::ignoreMessage(QtWarningMsg,
+                             "Rejected text containing an unsupported control character");
+        controller.sendText(QString::fromLatin1("safe\x01unsafe"));
+
+        QCOMPARE(requests.count(), 1);
+        QVERIFY(!controller.backendReady());
+    }
+
+    void localEditingInterceptsActionsBeforePortalInput()
+    {
+        InputController controller;
+        QSignalSpy textRequests(&controller, &InputController::localTextRequested);
+        QSignalSpy keyRequests(&controller, &InputController::localKeyRequested);
+        QSignalSpy chordRequests(&controller, &InputController::localChordRequested);
+
+        controller.setLocalTextEditing(true);
+        controller.sendText(QStringLiteral("correction"));
+        controller.sendKey(QStringLiteral("Backspace"));
+        controller.sendChord({QStringLiteral("Ctrl")}, QStringLiteral("A"));
+
+        QCOMPARE(textRequests.count(), 1);
+        QCOMPARE(textRequests.takeFirst().at(0).toString(), QStringLiteral("correction"));
+        QCOMPARE(keyRequests.count(), 1);
+        QCOMPARE(keyRequests.takeFirst().at(0).toString(), QStringLiteral("Backspace"));
+        QCOMPARE(chordRequests.count(), 1);
+        QVERIFY(controller.localTextEditing());
+        QVERIFY(!controller.backendReady());
+    }
+
+    void textDeliveryValidationMatchesUnicodePolicy()
+    {
+        InputController controller;
+        controller.setExperimentalUnicodeEnabled(false);
+
+        QVERIFY(controller.canSendText(QStringLiteral("ASCII text\nwith a tab\t")));
+        QVERIFY(!controller.canSendText(QString::fromLatin1("unsafe\x01control")));
+        QVERIFY(!controller.canSendText(QString::fromUtf8("cost £5")));
+
+        controller.setExperimentalUnicodeEnabled(true);
+        QVERIFY(controller.canSendText(QString::fromUtf8("cost £5")));
+        QVERIFY(!controller.canSendText(QString::fromLatin1("unsafe\x01control")));
+        controller.setExperimentalUnicodeEnabled(false);
+    }
+
     void experimentalUnicodeSettingPersists()
     {
         InputController controller;

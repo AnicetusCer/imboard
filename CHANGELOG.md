@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.5.0 - 2026-08-04
+
+Minor release adding private offline voice transcription.
+
+### Added
+
+- Add private offline voice transcription using the bundled Whisper
+  `small.en` model.
+- Add a centred transcription control and an integrated two-row recording and
+  transcript-editing strip with a 60-second countdown.
+- Keep captured audio in memory only, stop recording after 60 seconds, and run
+  transcription away from the keyboard UI thread.
+- Keep transcript correction on the keyboard's own stable Wayland surface and
+  accelerate the unquantised model with Vulkan where available, retaining a
+  CPU fallback.
+
 ## 0.4.6 - 2026-07-25
 
 Patch release for stalled portal setup recovery.

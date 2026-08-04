@@ -16,6 +16,11 @@ current implementation rather than future plans.
    delivery to `PortalInputBackend`.
 5. `PortalInputBackend` owns the XDG Remote Desktop portal session and refuses
    delivery until keyboard-only access is ready.
+6. `SpeechController` captures user-initiated microphone audio in memory,
+   converts it to 16 kHz mono PCM, and runs bundled Whisper transcription away
+   from the UI thread. While the integrated strip is active, `InputController`
+   routes keyboard actions into its local transcript editor; Apply returns to
+   portal delivery and sends the completed text to the target app.
 
 ## C++ ownership
 
@@ -33,6 +38,8 @@ current implementation rather than future plans.
 | `instancecontroller.*` | D-Bus liveness lease, crash recovery, single-instance lock, and local commands | lifecycle |
 | `signalhandler.*` | SIGINT/SIGTERM bridge into Qt shutdown | lifecycle |
 | `smoketestcontroller.*` | Non-interactive QML geometry choreography | QML smoke |
+| `audioconverter.*` | Safe PCM decoding, channel mixing, and 16 kHz resampling | `audioconverter-test` |
+| `speechcontroller.*` | Microphone lifecycle and offline Whisper transcription | audio conversion, QML smoke |
 
 ## QML ownership
 
@@ -49,6 +56,7 @@ current implementation rather than future plans.
 | `CompatibilityWarningPopup.qml` | One-time note for non-KDE sessions |
 | `PermissionSetupPopup.qml` | Required first-run portal explanation |
 | `RemoveAccessPopup.qml` | Destructive access-removal confirmation |
+| `KeyboardSurface.qml` | Keyboard UI and integrated recording, transcript editing, and apply strip |
 
 `main.cpp` supplies the root component's required controller properties through
 `QQmlApplicationEngine::setInitialProperties`. Child components receive those
@@ -83,6 +91,7 @@ Changing a key without migration silently resets a user's configuration.
 | Change movement or resizing | `surfacecontroller.*`, `KeyboardSurface.qml` | lifecycle, QML smoke, touch test |
 | Change popup structure | matching `*Popup.qml`, smoke object names | QML smoke |
 | Change custom assignments | `customkeystore.*`, `DeveloperPad.qml` | custom-key unit test, QML smoke |
+| Change offline dictation | `speechcontroller.*`, `audioconverter.*`, `KeyboardSurface.qml` | audio/input unit tests, QML smoke, manual microphone test |
 
 Manual compatibility checks remain necessary for native Wayland, XWayland, and
 sandboxed target applications; unit tests cannot prove compositor behavior.

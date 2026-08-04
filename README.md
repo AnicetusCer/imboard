@@ -27,7 +27,7 @@ In practice, that means:
 
 ## Status
 
-Current release: `0.4.6`.
+Current release: `0.5.0`.
 
 IMBOARD presents required keyboard-access setup on first visible launch. The
 standard desktop portal grants keyboard-only control and returns a restore token
@@ -48,6 +48,28 @@ Higher-quality video: [IMBOARD walkthrough](docs/videos/imboard-demo-0.2.0.webm)
 Custom pad only mode, from 1 to 16 visible keys:
 
 ![IMBOARD custom pad only mode key counts](docs/videos/imboard-custom-pad-only-counts.gif)
+
+## Offline voice transcription
+
+IMBOARD can record up to 60 seconds of speech, transcribe it locally, and show
+the result in an editable strip above the keyboard. Nothing is applied to the
+target application until you review the text and choose **APPLY**.
+
+The Flatpak uses [whisper.cpp](https://github.com/ggml-org/whisper.cpp), an
+efficient C/C++ implementation of
+[OpenAI's Whisper speech-recognition model](https://github.com/openai/whisper).
+IMBOARD bundles the English-only `small.en` model and performs inference on the
+device, using Vulkan acceleration when available and falling back to the CPU.
+It does not use the OpenAI API, upload recordings, or require network access.
+Captured audio remains in memory and is discarded after transcription.
+
+Recording with the ice-blue theme:
+
+![IMBOARD recording speech for local transcription](docs/screenshots/imboard-transcription-recording.png)
+
+Reviewing and correcting a transcript before applying it:
+
+![IMBOARD reviewing locally transcribed text](docs/screenshots/imboard-transcription-review.png)
 
 ## Install
 
@@ -77,12 +99,12 @@ It installs into your user account.
    sudo pacman -S flatpak
    ```
 
-2. Download `imboard-0.4.6-x86_64.flatpak` from the GitHub release.
+2. Download `imboard-0.5.0-x86_64.flatpak` from the GitHub release.
 
 3. Install it:
 
    ```sh
-   flatpak install --user ./imboard-0.4.6-x86_64.flatpak
+   flatpak install --user ./imboard-0.5.0-x86_64.flatpak
    ```
 
 4. Launch IMBOARD from the KDE app launcher, or run:
@@ -122,7 +144,7 @@ not need root once Flatpak and `flatpak-builder` are installed.
    ```sh
    git clone https://github.com/AnicetusCer/imboard.git
    cd imboard
-   git checkout v0.4.6
+   git checkout v0.5.0
    ```
 
 3. Build and install the user Flatpak:
@@ -163,8 +185,10 @@ GitHub releases, local Flatpak builds, documented permissions, and reproducible
 validation checks.
 
 The Flatpak does not request network, host filesystem, pointer, touchscreen,
-screencast, camera, microphone, or location access. Keyboard events are sent
-through the user-approved XDG Remote Desktop portal with keyboard capability.
+screencast, camera, or location access. Keyboard events are sent through the
+user-approved XDG Remote Desktop portal with keyboard capability. The optional
+offline transcription feature accesses the microphone only while its visible
+recording state is active; audio and transcription stay on the device.
 The portal permission is powerful, so IMBOARD stays input-inert until setup
 succeeds and provides a `FORGET ACCESS` flow in CONFIG.
 
@@ -201,7 +225,10 @@ For details, see [Security](SECURITY.md).
 
 ## Native Development Build
 
-IMBOARD requires CMake 3.21+, Qt 6.4+ with Qt Quick and Qt DBus, and Ninja.
+IMBOARD requires CMake 3.21+, Qt 6.4+ with Qt Quick, Qt DBus, Qt Multimedia,
+and Ninja. Release Flatpaks also build a pinned `whisper.cpp` and bundle the
+Whisper `small.en` model; native builds without that dependency keep dictation
+disabled while retaining the rest of the keyboard.
 
 ```sh
 cmake -S . -B build -G Ninja

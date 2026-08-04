@@ -14,6 +14,9 @@ release or packaging work, also read `docs/release-checklist.md` and
   `KeyboardInteractivityNone` intact.
 - Portal input requests keyboard capability only. Do not request pointer,
   touchscreen, screen-cast, camera, location, or network access.
+- Offline dictation may access the microphone only while the user-visible
+  recording state is active. Never persist or log recorded audio or transcript
+  contents, and never add a cloud transcription path or runtime network access.
 - Supported runtime targets are KDE Wayland desktop sessions, especially
   SteamOS Desktop Mode. Do not claim Gamescope/Gaming Mode or non-KDE desktop
   support without a deliberate project-scope change and matching tests.
@@ -39,6 +42,7 @@ release or packaging work, also read `docs/release-checklist.md` and
 - `qml/Main.qml`: composition only; keep feature UI in focused components.
 - `qml/KeyboardSurface.qml`: frame, movement, resize, and board placement.
 - `qml/*Popup.qml`: one settings or permission workflow per component.
+- `qml/KeyboardSurface.qml`: keyboard layout plus the integrated two-row dictation strip.
 - `qml/DeveloperPad.qml`: developer pages, catalog, and custom-key editor.
 - `layouts/`: read-only regional alphabet-board data.
 - `tests/`: unit, lifecycle, and QML smoke tests.

@@ -14,10 +14,11 @@ Window {
     required property var inputController
     required property var keyboardLayoutStore
     required property var startupManager
+    required property var speechController
     required property var surfaceController
     required property bool suppressInitialSetup
 
-    readonly property string appVersion: "0.4.6"
+    readonly property string appVersion: "0.5.0"
     readonly property int customPadKeyCount: Math.max(1, Math.min(16, appearanceStore.customPadKeyCount))
     readonly property int customPadColumns: appearanceStore.customPadColumns > 0
                                             ? Math.min(appearanceStore.customPadColumns,
@@ -195,6 +196,7 @@ Window {
         customKeyStore: root.customKeyStore
         inputController: root.inputController
         keyboardLayoutStore: root.keyboardLayoutStore
+        speechController: root.speechController
         surfaceController: root.surfaceController
         onAboutRequested: aboutPopup.open()
         onAppearanceRequested: appearancePopup.open()

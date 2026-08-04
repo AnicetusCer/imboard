@@ -10,6 +10,7 @@
 #include "keyboardlayoutstore.h"
 #include "signalhandler.h"
 #include "smoketestcontroller.h"
+#include "speechcontroller.h"
 #include "startupmanager.h"
 #include "surfacecontroller.h"
 
@@ -92,6 +93,7 @@ int main(int argc, char *argv[])
         return 8;
     }
     StartupManager startup;
+    SpeechController speech;
     SurfaceController surface;
     QQmlApplicationEngine engine;
     QObject::connect(&engine, &QQmlApplicationEngine::quit,
@@ -104,6 +106,7 @@ int main(int argc, char *argv[])
         {QStringLiteral("inputController"), QVariant::fromValue(&inputController)},
         {QStringLiteral("keyboardLayoutStore"), QVariant::fromValue(&keyboardLayout)},
         {QStringLiteral("startupManager"), QVariant::fromValue(&startup)},
+        {QStringLiteral("speechController"), QVariant::fromValue(&speech)},
         {QStringLiteral("surfaceController"), QVariant::fromValue(&surface)},
         {QStringLiteral("suppressInitialSetup"), smokeTest},
     });
@@ -125,7 +128,6 @@ int main(int argc, char *argv[])
         qCritical() << "Imboard drag preview window is unavailable";
         return 5;
     }
-
     const Qt::WindowFlags requiredSurfaceFlags = Qt::Tool
                                                   | Qt::WindowStaysOnTopHint
                                                   | Qt::WindowDoesNotAcceptFocus;
@@ -208,6 +210,12 @@ int main(int argc, char *argv[])
     QObject::connect(&instance, &InstanceController::toggleRequested, window, toggleKeyboard);
     QObject::connect(&instance, &InstanceController::quitRequested,
                      &app, &QCoreApplication::quit);
+    QObject::connect(&speech, &SpeechController::textApplicationRequested,
+                     &inputController, [&inputController](const QString &text) {
+        // Let QML leave local transcript-edit mode before portal delivery.
+        QTimer::singleShot(0, &inputController,
+                           [&inputController, text]() { inputController.sendText(text); });
+    });
 
     QMenu trayMenu;
     QAction showHideAction(QStringLiteral("Show / Hide Imboard"), &trayMenu);

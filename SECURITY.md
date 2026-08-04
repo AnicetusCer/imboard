@@ -2,17 +2,22 @@
 
 IMBOARD sends keyboard events through the user-approved XDG Remote Desktop
 portal. It does not request network access, host filesystem access, pointer
-control, touchscreen control, screencast, camera, microphone, or location
-access.
+control, touchscreen control, screencast, camera, or location access. Offline
+dictation uses microphone access only during an explicit, visibly indicated
+recording and processes audio locally in memory.
 
 The Flatpak manifest grants:
 
 - Wayland display access
 - fallback X11 socket for Flatpak native-Wayland packaging compatibility
+- PulseAudio/PipeWire audio access for user-initiated microphone recording
 - DRI for Qt graphics
 - IPC shared-memory support
 - KDE StatusNotifierWatcher DBus access for tray integration
 - XDG Remote Desktop portal keyboard capability, requested at runtime
+
+Imboard does not persist recordings or transcripts and does not log their
+contents. The bundled speech model removes any runtime network requirement.
 
 ## Reporting A Security Issue
 
