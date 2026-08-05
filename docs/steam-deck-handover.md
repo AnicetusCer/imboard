@@ -233,3 +233,28 @@ Record the following in the release notes or next handover update:
 - Desktop Mode return after Gaming Mode: pass/fail.
 - Signed release rehearsal: pass/fail.
 - Any microphone hardware or recognition-quality observations.
+
+## Steam Deck validation record: 2026-08-05
+
+- Git commit tested: `c7b9eec` (`feature/transcription-release-hardening`).
+- SteamOS version: 3.8.16 stable, build `20260716.1`.
+- KDE package versions: `plasma-desktop 6.4.3-1`,
+  `plasma-workspace 6.4.3-1.4`.
+- Core Flatpak installed without model: pass. Header showed `ADD SPEECH`, and
+  the add-speech flow opened the local installation guidance.
+- `small.en` extension installation: pass. Installed ref
+  `io.github.anicetuscer.imboard.Model.SmallEn/x86_64/0.5`.
+- Transcription result: pass. Live microphone dictation worked in the target
+  application, including after reboot.
+- Five-cycle transcription stress result: not separately recorded.
+- Portal and model restore after reboot: pass. No manual cleanup or setup was
+  needed; transcription worked immediately after reboot.
+- Desktop Mode return after Gaming Mode: pass. Gaming Mode to Desktop Mode was
+  tested twice and IMBOARD remained usable.
+- Protected settings file: pass. `Imboard.conf` mode was `600`.
+- Signed release rehearsal: pass. Generated the lightweight bundle, model
+  bundle, SHA-256 checksum file, and detached signature; signature verification
+  reported the expected release-signing fingerprint and checksum verification
+  passed.
+- Recognition-quality observation: microphone dictation was good enough to
+  enter text directly into the test conversation.
