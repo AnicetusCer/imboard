@@ -236,7 +236,7 @@ Record the following in the release notes or next handover update:
 
 ## Steam Deck validation record: 2026-08-05
 
-- Git commit tested: `c7b9eec` (`feature/transcription-release-hardening`).
+- Git commit tested: `c6f7c4a` (`feature/transcription-release-hardening`).
 - SteamOS version: 3.8.16 stable, build `20260716.1`.
 - KDE package versions: `plasma-desktop 6.4.3-1`,
   `plasma-workspace 6.4.3-1.4`.
@@ -244,9 +244,13 @@ Record the following in the release notes or next handover update:
   the add-speech flow opened the local installation guidance.
 - `small.en` extension installation: pass. Installed ref
   `io.github.anicetuscer.imboard.Model.SmallEn/x86_64/0.5`.
-- Transcription result: pass. Live microphone dictation worked in the target
-  application, including after reboot.
-- Five-cycle transcription stress result: not separately recorded.
+- Transcription result: pass. Live microphone dictation worked across a broad
+  selection of target applications, including after reboot; every application
+  tried accepted the result correctly.
+- Five-cycle transcription stress result: pass. Five consecutive
+  record/transcribe/edit/apply cycles completed successfully.
+- Maximum-duration transcription result: pass. A full 60-second recording
+  completed and transcribed successfully.
 - Portal and model restore after reboot: pass. No manual cleanup or setup was
   needed; transcription worked immediately after reboot.
 - Desktop Mode return after Gaming Mode: pass. Gaming Mode to Desktop Mode was
