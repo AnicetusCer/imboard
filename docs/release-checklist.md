@@ -14,11 +14,64 @@ The working tree should be clean before tagging. AppStream validation uses
 `--no-net` for local checks; run without it only after the public project URLs
 are live.
 
+The repository-root Flatpak manifest builds the tagged release rather than the
+working tree. When preparing a new tag, update its `imboard` source tag and
+confirm that the tagged model path matches the model-extension mount path.
+
 For Flathub submission preparation, also follow
 `docs/flathub-submission.md`.
 
 Before making the repository public, also follow
 `docs/public-release-audit.md`.
+
+## Release signing
+
+Official GitHub release bundles and their checksum file are signed by the
+dedicated IMBOARD release key:
+
+```text
+3E5D 814D 453E CD6C D953 7782 D1DE 8A0E 1D76 C26C
+```
+
+The canonical fingerprint without spaces is:
+
+```text
+3E5D814D453ECD6CD9537782D1DE8A0E1D76C26C
+```
+
+The public key is stored at
+`packaging/imboard-release-signing-public.asc`. The private key must remain in
+the dedicated `~/.gnupg-imboard` keyring and in the maintainer's encrypted
+backup. Never copy a private key, passphrase, or revocation certificate into
+the repository.
+
+Build release artifacts from the repository root with:
+
+```sh
+sh ./scripts/build-release-bundle.sh
+```
+
+The script refuses to build release artifacts when the dedicated private key
+is unavailable. It signs both Flatpak repository commits and produces a signed
+SHA-256 checksum file for the downloadable bundles.
+
+Upload all four generated artifacts plus
+`packaging/imboard-release-signing-public.asc` to the GitHub release. Do not
+upload any file from `~/imboard-gpg-backup`.
+
+Before uploading a release, verify its signature and checksums using a clean
+temporary keyring:
+
+```sh
+verification_home="$(mktemp -d)"
+chmod 700 "$verification_home"
+gpg --homedir "$verification_home" --import packaging/imboard-release-signing-public.asc
+gpg --homedir "$verification_home" --verify imboard-*-SHA256SUMS.asc imboard-*-SHA256SUMS
+sha256sum --check imboard-*-SHA256SUMS
+```
+
+Confirm that GPG reports the fingerprint above, then remove the temporary
+verification directory.
 
 ## Build and automated tests
 
@@ -51,6 +104,12 @@ install the exported build from the host:
 ```sh
 flatpak install --user --reinstall --noninteractive /home/deck/imboard/.flatpak-builder/cache io.github.anicetuscer.imboard
 flatpak run io.github.anicetuscer.imboard --toggle
+```
+
+Build and install the optional model extension separately:
+
+```sh
+distrobox enter deckst-dev -- flatpak-builder --user --install --force-clean /home/deck/imboard/flatpak-model-build /home/deck/imboard/packaging/io.github.anicetuscer.imboard.Model.SmallEn.yml
 ```
 
 Confirm the installed app ID:
@@ -93,6 +152,10 @@ Test on the Steam Deck desktop session:
    - at least one chord such as Ctrl+C or Ctrl+V;
    - at least one configured custom key.
 9. Confirm offline transcription:
+   - without the model extension, the header shows `ADD SPEECH` and opens the
+     add-on installation guidance;
+   - after installing the model extension and restarting Imboard, the header
+     shows `TRANSCRIBE`;
    - five consecutive record, transcribe, edit, and apply cycles complete;
    - recording stops automatically at 60 seconds;
    - a long transcript wraps and scrolls without clipped text;

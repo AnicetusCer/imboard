@@ -58,10 +58,11 @@ target application until you review the text and choose **APPLY**.
 The Flatpak uses [whisper.cpp](https://github.com/ggml-org/whisper.cpp), an
 efficient C/C++ implementation of
 [OpenAI's Whisper speech-recognition model](https://github.com/openai/whisper).
-IMBOARD bundles the English-only `small.en` model and performs inference on the
-device, using Vulkan acceleration when available and falling back to the CPU.
-It does not use the OpenAI API, upload recordings, or require network access.
-Captured audio remains in memory and is discarded after transcription.
+The optional speech add-on provides the English-only `small.en` model. IMBOARD
+performs inference on the device, using Vulkan acceleration when available and
+falling back to the CPU. It does not use the OpenAI API, upload recordings, or
+require runtime network access. Captured audio remains in memory and is
+discarded after transcription.
 
 Recording with the ice-blue theme:
 
@@ -99,19 +100,49 @@ It installs into your user account.
    sudo pacman -S flatpak
    ```
 
-2. Download `imboard-0.5.0-x86_64.flatpak` from the GitHub release.
+2. Download these files from the GitHub release:
 
-3. Install it:
+   - `imboard-0.5.0-x86_64.flatpak`
+   - `imboard-0.5.0-x86_64-SHA256SUMS`
+   - `imboard-0.5.0-x86_64-SHA256SUMS.asc`
+   - `imboard-release-signing-public.asc`
+
+3. Verify the release signature and downloaded bundle:
+
+   ```sh
+   gpg --import ./imboard-release-signing-public.asc
+   gpg --verify ./imboard-0.5.0-x86_64-SHA256SUMS.asc \
+       ./imboard-0.5.0-x86_64-SHA256SUMS
+   sha256sum --check --ignore-missing ./imboard-0.5.0-x86_64-SHA256SUMS
+   ```
+
+   Confirm that GPG reports fingerprint
+   `3E5D 814D 453E CD6C D953 7782 D1DE 8A0E 1D76 C26C`. A warning that the
+   key is not certified by another trusted identity is expected unless you
+   have independently marked it as trusted.
+
+4. Install it:
 
    ```sh
    flatpak install --user ./imboard-0.5.0-x86_64.flatpak
    ```
 
-4. Launch IMBOARD from the KDE app launcher, or run:
+5. Launch IMBOARD from the KDE app launcher, or run:
 
    ```sh
    flatpak run io.github.anicetuscer.imboard --toggle
    ```
+
+6. To enable offline transcription, also download
+   `imboard-model-small-en-0.5.0-x86_64.flatpak` from the same release and
+   install it:
+
+   ```sh
+   flatpak install --user ./imboard-model-small-en-0.5.0-x86_64.flatpak
+   ```
+
+   Restart IMBOARD after installing the model. Users who only need the
+   keyboard do not need to download this optional add-on.
 
 The release bundle is currently built for `x86_64`. Users on other
 architectures can build from source. A standalone `.flatpak` bundle does not
@@ -153,6 +184,12 @@ not need root once Flatpak and `flatpak-builder` are installed.
    sh ./scripts/install-user-flatpak.sh
    ```
 
+   To build and install the optional offline transcription model as well:
+
+   ```sh
+   sh ./scripts/install-user-speech-model.sh
+   ```
+
 4. Launch IMBOARD from the KDE app launcher, or run:
 
    ```sh
@@ -174,14 +211,16 @@ Or uninstall manually:
 
 ```sh
 flatpak run io.github.anicetuscer.imboard --quit
+flatpak uninstall --user io.github.anicetuscer.imboard.Model.SmallEn
 flatpak uninstall --user --delete-data io.github.anicetuscer.imboard
 ```
 
 ## Security And Permissions
 
-IMBOARD is not signed by a third-party certificate authority and does not have a
-third-party security certificate. The trust model is public source, tagged
-GitHub releases, local Flatpak builds, documented permissions, and reproducible
+IMBOARD does not have a third-party security certificate. Official GitHub
+release bundles have signed SHA-256 checksums using the dedicated release key
+documented above. The wider trust model is public source, tagged GitHub
+releases, local Flatpak builds, documented permissions, and reproducible
 validation checks.
 
 The Flatpak does not request network, host filesystem, pointer, touchscreen,
@@ -226,9 +265,10 @@ For details, see [Security](SECURITY.md).
 ## Native Development Build
 
 IMBOARD requires CMake 3.21+, Qt 6.4+ with Qt Quick, Qt DBus, Qt Multimedia,
-and Ninja. Release Flatpaks also build a pinned `whisper.cpp` and bundle the
-Whisper `small.en` model; native builds without that dependency keep dictation
-disabled while retaining the rest of the keyboard.
+and Ninja. Release Flatpaks build a pinned `whisper.cpp`; offline transcription
+becomes available when the separate `small.en` model add-on is installed.
+Native builds without that dependency keep dictation disabled while retaining
+the rest of the keyboard.
 
 ```sh
 cmake -S . -B build -G Ninja
@@ -297,6 +337,9 @@ IMBOARD is a spare-time project. Bug reports, focused pull requests, and KDE
 Wayland test results are welcome. If IMBOARD saves you time and you want to
 support the work, Ko-fi donations are welcome at
 <https://ko-fi.com/anicetuscer>.
+
+Contributors and coding assistants should start with [AGENTS.md](AGENTS.md) and
+the [documentation map](docs/README.md) before changing behavior.
 
 ## Licence and branding
 

@@ -34,6 +34,13 @@ SpeechController::SpeechController(QObject *parent)
     m_recordingLimit.setInterval(maximumRecordingMilliseconds);
     connect(&m_recordingLimit, &QTimer::timeout,
             this, &SpeechController::stopAndTranscribe);
+    connect(&m_audioBuffer, &QIODevice::bytesWritten, this, [this]() {
+        if (!recording() || m_recordedAudio.size() <= MaximumRecordingBytes) return;
+        stopAudioCapture();
+        m_recordedAudio.clear();
+        setError(QStringLiteral(
+            "Recording stopped because the microphone supplied too much audio data."));
+    });
     m_countdownTimer.setInterval(1000);
     connect(&m_countdownTimer, &QTimer::timeout,
             this, &SpeechController::countdownChanged);
@@ -56,7 +63,7 @@ SpeechController::SpeechController(QObject *parent)
 
     m_status = available()
                    ? QStringLiteral("Ready to record locally with Whisper small.en.")
-                   : QStringLiteral("The offline speech model is not installed in this build.");
+                   : QStringLiteral("Install the optional Whisper small.en model add-on.");
 }
 
 SpeechController::~SpeechController()
@@ -123,7 +130,7 @@ bool SpeechController::startRecording()
         return false;
     }
     if (!available()) {
-        setError(QStringLiteral("The offline Whisper small.en model is unavailable."));
+        setError(QStringLiteral("Install the optional Whisper small.en model add-on."));
         return false;
     }
 
@@ -137,8 +144,7 @@ bool SpeechController::startRecording()
     format.setChannelCount(1);
     format.setSampleFormat(QAudioFormat::Float);
     if (!device.isFormatSupported(format)) format = device.preferredFormat();
-    if (!format.isValid() || format.channelCount() < 1 || format.sampleRate() < 1
-        || format.sampleFormat() == QAudioFormat::Unknown) {
+    if (!isSafeCaptureFormat(format)) {
         setError(QStringLiteral("The microphone reported an unsupported audio format."));
         return false;
     }
@@ -167,6 +173,7 @@ bool SpeechController::startRecording()
     m_audioSource->start(&m_audioBuffer);
     if (m_audioSource->error() != QAudio::NoError) {
         stopAudioCapture();
+        m_recordedAudio.clear();
         setError(QStringLiteral("Could not start microphone recording."));
         return false;
     }
@@ -222,7 +229,7 @@ void SpeechController::cancel()
     emit transcriptChanged();
     setPhase(Phase::Idle,
              available() ? QStringLiteral("Ready to record locally with Whisper small.en.")
-                         : QStringLiteral("The offline speech model is not installed in this build."));
+                         : QStringLiteral("Install the optional Whisper small.en model add-on."));
 }
 
 void SpeechController::clearTranscript()
@@ -232,14 +239,6 @@ void SpeechController::clearTranscript()
     emit transcriptChanged();
 }
 
-bool SpeechController::applyTranscript(const QString &text)
-{
-    if (recording() || transcribing() || text.trimmed().isEmpty()) return false;
-    emit textApplicationRequested(text);
-    cancel();
-    return true;
-}
-
 QString SpeechController::modelPath()
 {
 #ifdef IMBOARD_DEFAULT_SPEECH_MODEL
@@ -247,6 +246,19 @@ QString SpeechController::modelPath()
 #else
     return {};
 #endif
+}
+
+bool SpeechController::isSafeCaptureFormat(const QAudioFormat &format)
+{
+    if (!format.isValid() || format.channelCount() < 1 || format.channelCount() > 8
+        || format.sampleRate() < 8000 || format.sampleRate() > 192000
+        || format.sampleFormat() == QAudioFormat::Unknown
+        || format.bytesPerFrame() < 1) {
+        return false;
+    }
+    const qint64 expectedBytes =
+        format.bytesForDuration(qint64(maximumRecordingMilliseconds) * 1000);
+    return expectedBytes > 0 && expectedBytes <= MaximumRecordingBytes;
 }
 
 SpeechController::TranscriptionResult SpeechController::transcribe(

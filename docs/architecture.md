@@ -81,8 +81,6 @@ after the paste if the clipboard still contains Imboard's temporary text. The
 default release behavior rejects that path rather than touching the user's
 clipboard.
 
-## Configuration
-
 ## Offline dictation
 
 Dictation is an optional local pipeline integrated into the keyboard's layer
@@ -93,10 +91,10 @@ and stops automatically after 60 seconds.
 Captured audio remains in memory. Imboard requests native 16 kHz mono float
 capture when the device supports it; otherwise `AudioConverter` mixes the
 device's preferred channel layout to mono and resamples it to the format
-required by the bundled Whisper `small.en` model. `SpeechController` runs
-conversion and inference outside the UI thread, uses Vulkan compute when
-available with a CPU fallback, and frees the model and audio after each
-transcription. Audio and
+required by the optional Whisper `small.en` model Flatpak extension.
+`SpeechController` runs conversion and inference outside the UI thread, uses
+Vulkan compute when available with a CPU fallback, and frees the model and
+audio after each transcription. Audio and
 transcript contents are neither persisted nor logged, and the Flatpak retains
 no network permission.
 
@@ -105,7 +103,9 @@ multiple layer windows. The keyboard layer remains non-focusable throughout,
 so the target application's focus is preserved. During review,
 `InputController` intercepts Imboard text and navigation actions locally for
 the transcript instead of sending them through the portal. Apply disables that
-local route before delegating the completed text to portal input.
+local route before delegating the completed text to portal input. The transcript
+is cleared only after `InputController` reports successful delivery; an
+interrupted send keeps the reviewed text available for retry.
 
 ## Configuration
 

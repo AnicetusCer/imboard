@@ -1,8 +1,14 @@
 build*/
 .flatpak-builder/
 flatpak-build/
+flatpak-model-build/
 flatpak-repo/
 *.flatpak
+*private*.asc
+*secret*.asc
+*.rev
+*-SHA256SUMS
+*-SHA256SUMS.asc
 .cache/
 .idea/
 .vscode/

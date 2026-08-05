@@ -30,6 +30,10 @@ cat <<EOF
 
 IMBOARD is installed for this user.
 
+Offline transcription is an optional add-on. Install the current small.en
+model from this source checkout with:
+  sh ./scripts/install-user-speech-model.sh
+
 Launch it with:
   flatpak run ${APP_ID} --toggle
 

@@ -17,8 +17,8 @@ Window {
     required property var speechController
     required property var surfaceController
     required property bool suppressInitialSetup
+    required property string appVersion
 
-    readonly property string appVersion: "0.5.0"
     readonly property int customPadKeyCount: Math.max(1, Math.min(16, appearanceStore.customPadKeyCount))
     readonly property int customPadColumns: appearanceStore.customPadColumns > 0
                                             ? Math.min(appearanceStore.customPadColumns,
@@ -202,6 +202,7 @@ Window {
         onAppearanceRequested: appearancePopup.open()
         onConfigurationRequested: configPopup.open()
         onLayoutRequested: layoutPopup.open()
+        onSpeechSetupRequested: speechSetupPopup.open()
         onExitRequested: Qt.quit()
     }
 
@@ -232,15 +233,23 @@ Window {
         keyboardLayoutStore: root.keyboardLayoutStore
     }
 
+    SpeechSetupPopup {
+        id: speechSetupPopup
+        parent: Overlay.overlay
+        appearanceStore: root.appearanceStore
+    }
+
     ConfigPopup {
         id: configPopup
         parent: Overlay.overlay
         appearanceStore: root.appearanceStore
         inputController: root.inputController
+        speechController: root.speechController
         startupManager: root.startupManager
         portalBusy: root.portalBusy
         onPermissionSetupRequested: portalExplanationPopup.open()
         onRemoveAccessRequested: removeAccessPopup.open()
+        onSpeechSetupRequested: speechSetupPopup.open()
     }
 
     PermissionSetupPopup {

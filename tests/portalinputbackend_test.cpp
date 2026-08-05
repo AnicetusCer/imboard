@@ -42,6 +42,32 @@ private slots:
         QVERIFY(!backend.setupComplete());
     }
 
+    void protectsSavedPermissionState()
+    {
+        QSettings settings;
+        settings.clear();
+        settings.setValue(QStringLiteral("portal/setupComplete"), true);
+        settings.setValue(QStringLiteral("portal/restoreToken"), QStringLiteral("secret-token"));
+        settings.sync();
+        QCOMPARE(settings.status(), QSettings::NoError);
+        const QString settingsPath = settings.fileName();
+        QVERIFY(QFile::setPermissions(
+            settingsPath,
+            QFileDevice::ReadOwner | QFileDevice::WriteOwner | QFileDevice::ReadGroup
+                | QFileDevice::ReadOther));
+
+        const PortalInputBackend backend;
+        QVERIFY(backend.setupComplete());
+        const QFileDevice::Permissions permissions = QFile::permissions(settingsPath);
+        QVERIFY(permissions.testFlag(QFileDevice::ReadOwner));
+        QVERIFY(permissions.testFlag(QFileDevice::WriteOwner));
+        QVERIFY(!(permissions
+                  & (QFileDevice::ExeOwner | QFileDevice::ReadGroup
+                     | QFileDevice::WriteGroup | QFileDevice::ExeGroup
+                     | QFileDevice::ReadOther | QFileDevice::WriteOther
+                     | QFileDevice::ExeOther)));
+    }
+
     void waitsForUnavailablePortalDuringRestore()
     {
         QSettings settings;

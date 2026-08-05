@@ -179,10 +179,9 @@ void SurfaceController::finishInteraction()
     }
     QSettings settings;
     settings.setValue(QStringLiteral("window/layerPosition"), m_position);
-    settings.setValue(QStringLiteral("window/size"), m_window->size());
     settings.sync();
     if (settings.status() != QSettings::NoError)
-        qWarning() << "Could not save the Imboard window geometry";
+        qWarning() << "Could not save the Imboard window position";
     m_interaction = Interaction::None;
 }
 

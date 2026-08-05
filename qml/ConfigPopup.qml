@@ -10,11 +10,13 @@ Popup {
 
     required property var appearanceStore
     required property var inputController
+    required property var speechController
     required property var startupManager
     required property bool portalBusy
 
     signal permissionSetupRequested
     signal removeAccessRequested
+    signal speechSetupRequested
 
     function customPadColumnLabel() {
         if (root.appearanceStore.customPadColumns === 0) return "AUTO"
@@ -138,6 +140,34 @@ Popup {
                         root.removeAccessRequested()
                     else if (!root.portalBusy)
                         root.permissionSetupRequested()
+                }
+            }
+        }
+
+        RowLayout {
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+            Label {
+                Layout.fillWidth: true
+                text: "OFFLINE TRANSCRIPTION"
+                color: root.speechController.available
+                       ? root.appearanceStore.secondary : "#ffb43b"
+                font.bold: true
+                font.pixelSize: 10
+                elide: Text.ElideRight
+            }
+            KeyCap {
+                Layout.preferredWidth: 76
+                Layout.fillHeight: true
+                showBorders: root.appearanceStore.keyBordersVisible
+                keyLabel: root.speechController.available ? "READY" : "INSTALL"
+                accent: root.speechController.available ? "#72ff9f" : "#ffb43b"
+                toolTipText: root.speechController.available
+                             ? "The optional Whisper small.en model is installed"
+                             : "Show how to install the optional Whisper small.en model"
+                onClicked: {
+                    if (!root.speechController.available)
+                        root.speechSetupRequested()
                 }
             }
         }

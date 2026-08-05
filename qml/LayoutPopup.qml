@@ -12,7 +12,9 @@ Popup {
 
     required property var appearanceStore
     required property var keyboardLayoutStore
-    property real renderedOptionHeight: 58
+    readonly property real renderedOptionHeight:
+        layoutRepeater.count > 0 && layoutRepeater.itemAt(0)
+        ? layoutRepeater.itemAt(0).height : 0
 
     objectName: "layoutPopup"
     x: Math.round((parent.width - width) / 2)
@@ -41,7 +43,8 @@ Popup {
     }
 
     contentItem: ColumnLayout {
-        spacing: 8
+        objectName: "layoutPopupContent"
+        spacing: root.height < 320 ? 4 : 8
 
         RowLayout {
             Layout.fillWidth: true
@@ -70,6 +73,7 @@ Popup {
         }
 
         Label {
+            visible: root.height >= 320
             Layout.fillWidth: true
             text: "Choose the layout that matches KDE/SteamOS. IMBOARD behaves like a physical keyboard and does not change the system layout."
             color: root.appearanceStore.secondary
@@ -80,6 +84,7 @@ Popup {
         }
 
         Label {
+            visible: root.height >= 320
             Layout.fillWidth: true
             text: "Quick check: Shift+2 should match your desktop. If it types @, choose a US-like layout. If it types \", choose GB or IE."
             color: root.appearanceStore.primary
@@ -90,15 +95,18 @@ Popup {
         }
 
         GridLayout {
+            id: layoutOptionsGrid
+            objectName: "layoutOptionsGrid"
             Layout.fillWidth: true
             Layout.fillHeight: true
-            Layout.minimumHeight: 220
+            Layout.minimumHeight: 0
             Layout.preferredHeight: 300
             columns: 2
             columnSpacing: 8
             rowSpacing: 6
 
             Repeater {
+                id: layoutRepeater
                 model: root.keyboardLayoutStore.availableLayouts
                 Rectangle {
                     id: layoutOption

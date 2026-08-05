@@ -14,6 +14,12 @@ flatpak install --user flathub org.kde.Sdk//6.10
 sh ./scripts/install-user-flatpak.sh
 ```
 
+Install the optional offline transcription model separately:
+
+```sh
+sh ./scripts/install-user-speech-model.sh
+```
+
 Launch or toggle the installed development build:
 
 ```sh
@@ -31,7 +37,8 @@ portal. When enabled, Imboard launches after login with the keyboard hidden and
 the system-tray icon available for show/hide. Native development builds continue
 to manage their own autostart desktop file.
 
-To create a local `.flatpak` bundle suitable for attaching to a GitHub release:
+To create the lightweight application bundle and separate optional model bundle
+suitable for attaching to a GitHub release:
 
 ```sh
 sh ./scripts/build-release-bundle.sh

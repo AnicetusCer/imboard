@@ -23,8 +23,8 @@
     </p>
     <p>
       Optional offline transcription records only when explicitly started,
-      processes speech locally with a bundled model, and lets the user edit the
-      result before applying it to another application.
+      processes speech locally with a separately installed model add-on, and
+      lets the user edit the result before applying it to another application.
     </p>
     <p>
       Imboard uses the standard XDG Remote Desktop portal to request

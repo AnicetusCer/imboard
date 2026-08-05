@@ -44,15 +44,15 @@ public:
     Q_INVOKABLE void stopAndTranscribe();
     Q_INVOKABLE void cancel();
     Q_INVOKABLE void clearTranscript();
-    Q_INVOKABLE bool applyTranscript(const QString &text);
 
 signals:
     void stateChanged();
     void countdownChanged();
     void transcriptChanged();
-    void textApplicationRequested(const QString &text);
 
 private:
+    friend class SpeechControllerTest;
+
     enum class Phase { Idle, Recording, Transcribing, Ready, Error };
     struct TranscriptionResult {
         QString text;
@@ -61,12 +61,15 @@ private:
     };
 
     static QString modelPath();
+    static bool isSafeCaptureFormat(const QAudioFormat &format);
     static TranscriptionResult transcribe(const QVector<float> &samples,
                                           const QString &modelPath,
                                           std::atomic_bool *cancelRequested);
     void setError(const QString &message);
     void setPhase(Phase phase, const QString &status);
     void stopAudioCapture();
+
+    static constexpr qint64 MaximumRecordingBytes = 64 * 1024 * 1024;
 
     Phase m_phase = Phase::Idle;
     QString m_status;

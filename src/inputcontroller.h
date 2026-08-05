@@ -38,7 +38,7 @@ public:
     Q_INVOKABLE void restorePortalIfConfigured();
     Q_INVOKABLE bool forgetPortalPermission();
 
-    Q_INVOKABLE void sendText(const QString &text);
+    Q_INVOKABLE bool sendText(const QString &text);
     Q_INVOKABLE void sendKey(const QString &key);
     Q_INVOKABLE void sendChord(const QStringList &modifiers, const QString &key);
 

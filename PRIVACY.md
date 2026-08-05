@@ -18,9 +18,9 @@ login, camera, location, or network access.
 The offline transcription feature uses Flatpak audio access to open the
 microphone only after the user presses `TRANSCRIBE`. A visible recording state
 is shown and recording stops automatically after 60 seconds. Captured audio is
-held in memory, processed locally by the bundled Whisper `small.en` model, and
-discarded after transcription. Imboard does not save recordings or transcripts
-and does not send them over a network.
+held in memory, processed locally by the separately installed Whisper
+`small.en` model add-on, and discarded after transcription. Imboard does not
+save recordings or transcripts and does not send them over a network.
 
 ## Stored data
 

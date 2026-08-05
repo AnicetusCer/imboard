@@ -120,7 +120,7 @@ bool InputController::forgetPortalPermission()
     return m_portal.forgetPermission();
 }
 
-void InputController::sendText(const QString &text)
+bool InputController::sendText(const QString &text)
 {
     const QList<uint> codepoints = text.toUcs4();
     const QString description = QStringLiteral("text:%1-codepoint%2")
@@ -130,18 +130,18 @@ void InputController::sendText(const QString &text)
     emit actionRequested(description);
     if (hasUnsupportedTextControl(codepoints)) {
         qWarning() << "Rejected text containing an unsupported control character";
-        return;
+        return false;
     }
     if (m_localTextEditing) {
         emit localTextRequested(text);
-        return;
+        return true;
     }
     const bool needsClipboardPaste = requiresUnicodePaste(codepoints);
-    if (!backendReady()) return;
+    if (!backendReady()) return false;
     if (needsClipboardPaste) {
-        if (m_experimentalUnicodeEnabled) pasteTextViaClipboard(text);
-        else qWarning() << "Rejected non-ASCII text because experimental Unicode input is disabled";
-        return;
+        if (m_experimentalUnicodeEnabled) return pasteTextViaClipboard(text);
+        qWarning() << "Rejected non-ASCII text because experimental Unicode input is disabled";
+        return false;
     }
     for (qsizetype index = 0; index < codepoints.size(); ++index) {
         const uint codepoint = codepoints.at(index);
@@ -152,8 +152,9 @@ void InputController::sendText(const QString &text)
         const quint32 keysym = codepoint == '\n' || codepoint == '\r' ? namedKeysym(QStringLiteral("Enter"))
                                : codepoint == '\t' ? namedKeysym(QStringLiteral("Tab"))
                                                     : codepoint;
-        if (!m_portal.tapKeysym(keysym)) break;
+        if (!m_portal.tapKeysym(keysym)) return false;
     }
+    return true;
 }
 
 void InputController::sendKey(const QString &key)

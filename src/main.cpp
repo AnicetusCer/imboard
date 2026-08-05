@@ -45,6 +45,7 @@ int main(int argc, char *argv[])
 #endif
     QApplication app(argc, argv);
     QApplication::setApplicationName(QString::fromUtf8(Imboard::AppName));
+    QApplication::setApplicationVersion(QString::fromUtf8(IMBOARD_VERSION));
     QApplication::setOrganizationName(QString::fromUtf8(Imboard::OrganizationName));
     QApplication::setDesktopFileName(QString::fromUtf8(Imboard::AppId));
     QApplication::setQuitOnLastWindowClosed(false);
@@ -109,6 +110,7 @@ int main(int argc, char *argv[])
         {QStringLiteral("speechController"), QVariant::fromValue(&speech)},
         {QStringLiteral("surfaceController"), QVariant::fromValue(&surface)},
         {QStringLiteral("suppressInitialSetup"), smokeTest},
+        {QStringLiteral("appVersion"), QApplication::applicationVersion()},
     });
 
     if (!rootObject) {
@@ -210,13 +212,6 @@ int main(int argc, char *argv[])
     QObject::connect(&instance, &InstanceController::toggleRequested, window, toggleKeyboard);
     QObject::connect(&instance, &InstanceController::quitRequested,
                      &app, &QCoreApplication::quit);
-    QObject::connect(&speech, &SpeechController::textApplicationRequested,
-                     &inputController, [&inputController](const QString &text) {
-        // Let QML leave local transcript-edit mode before portal delivery.
-        QTimer::singleShot(0, &inputController,
-                           [&inputController, text]() { inputController.sendText(text); });
-    });
-
     QMenu trayMenu;
     QAction showHideAction(QStringLiteral("Show / Hide Imboard"), &trayMenu);
     QAction quitAction(QStringLiteral("Quit Imboard"), &trayMenu);

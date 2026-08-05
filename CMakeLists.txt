@@ -18,7 +18,8 @@ find_package(Qt6 6.4 REQUIRED COMPONENTS Concurrent DBus Multimedia Quick Qml Wi
 find_package(LayerShellQt QUIET)
 
 option(IMBOARD_REQUIRE_WHISPER "Fail configuration when whisper.cpp is unavailable" OFF)
-set(IMBOARD_SPEECH_MODEL_PATH "/app/share/imboard/models/ggml-small.en.bin"
+set(IMBOARD_SPEECH_MODEL_PATH
+    "/app/share/imboard/models/SmallEn/ggml-small.en.bin"
     CACHE FILEPATH "Path to the whisper.cpp model used for offline dictation")
 if(IMBOARD_REQUIRE_WHISPER)
     find_package(whisper CONFIG REQUIRED)
@@ -79,16 +80,22 @@ qt_add_qml_module(imboard
         qml/AppearancePopup.qml
         qml/ConfigPopup.qml
         qml/CompatibilityWarningPopup.qml
+        qml/CompactPadHeader.qml
+        qml/CustomKeyPickerPopup.qml
         qml/CustomPadOnlyPage.qml
         qml/DeveloperCustomPage.qml
         qml/DeveloperPad.qml
+        qml/DeveloperPadCatalog.qml
         qml/DeveloperStandardPage.qml
         qml/KeyboardSurface.qml
+        qml/KeyboardHeader.qml
         qml/KeyCap.qml
         qml/LayoutPopup.qml
         qml/PermissionSetupPopup.qml
         qml/RemoveAccessPopup.qml
         qml/StartupPromptPopup.qml
+        qml/SpeechSetupPopup.qml
+        qml/TranscriptionStrip.qml
 )
 
 qt_add_resources(imboard twemoji_assets
@@ -127,7 +134,19 @@ qt_add_resources(imboard keyboard_layouts
 target_link_libraries(imboard PRIVATE
     Qt6::Concurrent Qt6::DBus Qt6::Multimedia Qt6::Quick Qt6::Qml Qt6::Widgets)
 target_compile_definitions(imboard PRIVATE
-    IMBOARD_DEFAULT_SPEECH_MODEL="${IMBOARD_SPEECH_MODEL_PATH}")
+    IMBOARD_DEFAULT_SPEECH_MODEL="${IMBOARD_SPEECH_MODEL_PATH}"
+    IMBOARD_VERSION="${PROJECT_VERSION}")
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+    include(CheckPIESupported)
+    check_pie_supported()
+    set_property(TARGET imboard PROPERTY POSITION_INDEPENDENT_CODE TRUE)
+    target_compile_options(imboard PRIVATE
+        $<$<CONFIG:Release,RelWithDebInfo,MinSizeRel>:-fstack-protector-strong>)
+    target_compile_definitions(imboard PRIVATE
+        $<$<CONFIG:Release,RelWithDebInfo,MinSizeRel>:_FORTIFY_SOURCE=2>)
+    target_link_options(imboard PRIVATE
+        $<$<CONFIG:Release,RelWithDebInfo,MinSizeRel>:-Wl,-z,relro,-z,now>)
+endif()
 if(TARGET whisper)
     target_link_libraries(imboard PRIVATE whisper)
     target_compile_definitions(imboard PRIVATE IMBOARD_HAVE_WHISPER)
@@ -259,6 +278,20 @@ if(BUILD_TESTING)
 
     add_test(NAME dictation-audio-conversion COMMAND audioconverter-test)
     set_tests_properties(dictation-audio-conversion PROPERTIES TIMEOUT 5)
+
+    qt_add_executable(speechcontroller-test
+        tests/speechcontroller_test.cpp
+        src/audioconverter.cpp
+        src/audioconverter.h
+        src/speechcontroller.cpp
+        src/speechcontroller.h
+    )
+    target_include_directories(speechcontroller-test PRIVATE src)
+    target_link_libraries(speechcontroller-test PRIVATE
+        Qt6::Concurrent Qt6::Multimedia Qt6::Test)
+
+    add_test(NAME dictation-missing-model-lifecycle COMMAND speechcontroller-test)
+    set_tests_properties(dictation-missing-model-lifecycle PROPERTIES TIMEOUT 5)
 
     add_test(NAME imboard-qml-smoke
              COMMAND ${DBUS_RUN_SESSION_EXECUTABLE} --

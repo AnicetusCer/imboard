@@ -7,6 +7,17 @@ runtime-version: "6.10"
 sdk: org.kde.Sdk
 command: imboard
 
+add-extensions:
+  io.github.anicetuscer.imboard.Model:
+    directory: share/imboard/models
+    version: "0.5"
+    subdirectories: true
+    no-autodownload: true
+    autodelete: true
+
+cleanup-commands:
+  - mkdir -p "${FLATPAK_DEST}/share/imboard/models"
+
 finish-args:
   - --share=ipc
   - --socket=wayland
@@ -56,18 +67,6 @@ modules:
         url: https://github.com/ggml-org/whisper.cpp.git
         commit: f049fff95a089aa9969deb009cdd4892b3e74916
 
-  - name: whisper-small-en-model
-    buildsystem: simple
-    build-commands:
-      - install -Dm644 ggml-small.en.bin /app/share/imboard/models/ggml-small.en.bin
-      - install -Dm644 whisper-model-LICENSE /app/share/licenses/imboard/whisper-model-LICENSE
-    sources:
-      - type: file
-        url: https://huggingface.co/ggerganov/whisper.cpp/resolve/5359861c739e955e79d9a303bcbc70fb988958b1/ggml-small.en.bin
-        sha256: c6138d6d58ecc8322097e0f987c32f1be8bb0a18532a3f88f734d1bbf9c41e5d
-      - type: file
-        path: whisper-model-LICENSE
-
   - name: imboard
     buildsystem: cmake-ninja
     config-opts:
@@ -82,5 +81,6 @@ modules:
           - .git
           - build*
           - flatpak-build
+          - flatpak-model-build
           - flatpak-repo
           - "*.flatpak"

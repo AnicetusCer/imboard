@@ -11,6 +11,8 @@
 #include <QDBusPendingCall>
 #include <QDBusReply>
 #include <QDBusServiceWatcher>
+#include <QFile>
+#include <QFileInfo>
 #include <QSettings>
 #include <QUuid>
 
@@ -26,6 +28,30 @@ constexpr int PermissionPromptClearanceDelayMs = 500;
 constexpr int NonInteractiveRequestTimeoutMs = 15000;
 constexpr int PermissionRequestTimeoutMs = 120000;
 constexpr int MaximumRequestTimeoutRetries = 3;
+
+bool protectSettingsFile(QSettings &settings)
+{
+#ifdef Q_OS_UNIX
+    settings.sync();
+    if (settings.status() != QSettings::NoError) return false;
+    const QString path = settings.fileName();
+    if (path.isEmpty() || !QFileInfo::exists(path)) return false;
+    constexpr QFileDevice::Permissions privatePermissions =
+        QFileDevice::ReadOwner | QFileDevice::WriteOwner;
+    constexpr QFileDevice::Permissions forbiddenPermissions =
+        QFileDevice::ExeOwner | QFileDevice::ReadGroup | QFileDevice::WriteGroup
+        | QFileDevice::ExeGroup | QFileDevice::ReadOther | QFileDevice::WriteOther
+        | QFileDevice::ExeOther;
+    const QFileDevice::Permissions currentPermissions = QFile::permissions(path);
+    const bool alreadyPrivate = currentPermissions.testFlag(QFileDevice::ReadOwner)
+                                && currentPermissions.testFlag(QFileDevice::WriteOwner)
+                                && !(currentPermissions & forbiddenPermissions);
+    return alreadyPrivate || QFile::setPermissions(path, privatePermissions);
+#else
+    Q_UNUSED(settings)
+    return true;
+#endif
+}
 
 void closePortalObject(const QString &path, const QString &interface)
 {
@@ -82,13 +108,20 @@ QString PortalInputBackend::status() const
 
 bool PortalInputBackend::setupComplete() const
 {
-    const QSettings settings;
+    QSettings settings;
     const bool complete = settings.value(QStringLiteral("portal/setupComplete"), false).toBool()
                           && !settings.value(QStringLiteral("portal/restoreToken"))
                                   .toString().isEmpty();
-    if (settings.status() != QSettings::NoError)
+    if (settings.status() != QSettings::NoError) {
         qWarning() << "Could not read saved keyboard permission state";
-    return complete;
+        return false;
+    }
+    if (!complete) return false;
+    if (!protectSettingsFile(settings)) {
+        qWarning() << "Could not protect saved keyboard permission state";
+        return false;
+    }
+    return true;
 }
 
 void PortalInputBackend::connectPortal()
@@ -353,6 +386,13 @@ void PortalInputBackend::handleResponse(uint response, const QVariantMap &result
         settings.sync();
         if (settings.status() != QSettings::NoError) {
             setError(QStringLiteral("Could not save the keyboard permission"));
+            return;
+        }
+        if (!protectSettingsFile(settings)) {
+            settings.remove(QStringLiteral("portal/restoreToken"));
+            settings.remove(QStringLiteral("portal/setupComplete"));
+            settings.sync();
+            setError(QStringLiteral("Could not securely save the keyboard permission"));
             return;
         }
         m_stage = Stage::Ready;

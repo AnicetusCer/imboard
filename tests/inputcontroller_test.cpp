@@ -46,7 +46,7 @@ private slots:
         InputController controller;
         QSignalSpy requests(&controller, &InputController::actionRequested);
 
-        controller.sendText(QStringLiteral("private-token"));
+        QVERIFY(!controller.sendText(QStringLiteral("private-token")));
 
         QCOMPARE(requests.count(), 1);
         const QString description = requests.takeFirst().at(0).toString();
@@ -61,7 +61,7 @@ private slots:
 
         QTest::ignoreMessage(QtWarningMsg,
                              "Rejected text containing an unsupported control character");
-        controller.sendText(QString::fromLatin1("safe\x01unsafe"));
+        QVERIFY(!controller.sendText(QString::fromLatin1("safe\x01unsafe")));
 
         QCOMPARE(requests.count(), 1);
         QVERIFY(!controller.backendReady());
@@ -75,7 +75,7 @@ private slots:
         QSignalSpy chordRequests(&controller, &InputController::localChordRequested);
 
         controller.setLocalTextEditing(true);
-        controller.sendText(QStringLiteral("correction"));
+        QVERIFY(controller.sendText(QStringLiteral("correction")));
         controller.sendKey(QStringLiteral("Backspace"));
         controller.sendChord({QStringLiteral("Ctrl")}, QStringLiteral("A"));
 

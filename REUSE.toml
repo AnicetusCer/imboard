@@ -36,3 +36,9 @@ path = ["packaging/whisper-model-LICENSE"]
 precedence = "override"
 SPDX-FileCopyrightText = "2022 OpenAI"
 SPDX-License-Identifier = "MIT"
+
+[[annotations]]
+path = ["packaging/imboard-release-signing-public.asc"]
+precedence = "override"
+SPDX-FileCopyrightText = "2026 AnicetusCer"
+SPDX-License-Identifier = "CC0-1.0"

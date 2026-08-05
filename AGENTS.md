@@ -40,17 +40,22 @@ release or packaging work, also read `docs/release-checklist.md` and
 
 - `src/`: C++ lifecycle, persistence, portal, and surface controllers.
 - `qml/Main.qml`: composition only; keep feature UI in focused components.
-- `qml/KeyboardSurface.qml`: frame, movement, resize, and board placement.
+- `qml/KeyboardSurface.qml`: keyboard-frame composition and board placement.
+- `qml/KeyboardHeader.qml`, `qml/CompactPadHeader.qml`: full and compact
+  window controls, movement, and mode switching.
+- `qml/TranscriptionStrip.qml`: recording, transcript editing, and apply flow.
 - `qml/*Popup.qml`: one settings or permission workflow per component.
-- `qml/KeyboardSurface.qml`: keyboard layout plus the integrated two-row dictation strip.
-- `qml/DeveloperPad.qml`: developer pages, catalog, and custom-key editor.
+- `qml/DeveloperPad.qml`: developer-page and custom-key editing coordination;
+  static actions live in `qml/DeveloperPadCatalog.qml`, and picker presentation
+  lives in `qml/CustomKeyPickerPopup.qml`.
 - `layouts/`: read-only regional alphabet-board data.
 - `tests/`: unit, lifecycle, and QML smoke tests.
 - `packaging/`: desktop entry, icon, and Flatpak manifest.
+- `docs/README.md`: documentation authority and historical-document map.
 
 Generated directories (`build*`, `.flatpak-builder`, `flatpak-build`,
-`flatpak-repo`) are not source. Do not edit or search them for implementation
-references.
+`flatpak-model-build`, `flatpak-repo`) are not source. Do not edit or search
+them for implementation references.
 
 ## Build and test
 

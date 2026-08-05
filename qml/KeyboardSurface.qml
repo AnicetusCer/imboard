@@ -17,166 +17,27 @@ Rectangle {
     required property var surfaceController
 
     readonly property bool customPadEditorMode: customPadOnlyPage.editorMode
-    readonly property bool transcriptCanApply:
-        inputController.canSendText(transcriptArea.text)
-    property bool transcriptionActive: false
+    readonly property bool transcriptionActive: transcriptionStrip.active
+    readonly property string transcriptDeliveryError: transcriptionStrip.deliveryError
 
     function beginTranscription() {
-        transcriptArea.text = ""
-        speechController.clearTranscript()
-        inputController.localTextEditing = true
-        transcriptionActive = true
-        speechController.startRecording()
+        transcriptionStrip.beginTranscription()
     }
 
     function cancelTranscription() {
-        inputController.localTextEditing = false
-        speechController.cancel()
-        transcriptionActive = false
-    }
-
-    function recordAgain() {
-        transcriptArea.text = ""
-        speechController.clearTranscript()
-        speechController.startRecording()
+        transcriptionStrip.cancelTranscription()
     }
 
     function applyTranscription() {
-        const editedText = transcriptArea.text
-        if (!inputController.canSendText(editedText)) return
-        inputController.localTextEditing = false
-        if (speechController.applyTranscript(editedText)) {
-            transcriptionActive = false
-        } else {
-            inputController.localTextEditing = true
-        }
-    }
-
-    function replaceTranscriptSelection(value) {
-        if (speechController.phase !== "ready") return
-        const start = Math.min(transcriptArea.selectionStart, transcriptArea.selectionEnd)
-        const end = Math.max(transcriptArea.selectionStart, transcriptArea.selectionEnd)
-        if (end > start) transcriptArea.remove(start, end)
-        transcriptArea.insert(start, value)
-        transcriptArea.cursorPosition = start + value.length
-    }
-
-    function removeTranscriptSelection() {
-        const start = Math.min(transcriptArea.selectionStart, transcriptArea.selectionEnd)
-        const end = Math.max(transcriptArea.selectionStart, transcriptArea.selectionEnd)
-        if (end <= start) return false
-        transcriptArea.remove(start, end)
-        transcriptArea.cursorPosition = start
-        return true
-    }
-
-    function keepTranscriptCursorVisible() {
-        if (!transcriptionActive) return
-        Qt.callLater(function() {
-            const cursor = transcriptArea.cursorRectangle
-            if (cursor.y < transcriptViewport.contentY) {
-                transcriptViewport.contentY = Math.max(0, cursor.y - 3)
-            } else if (cursor.y + cursor.height
-                       > transcriptViewport.contentY + transcriptViewport.height) {
-                transcriptViewport.contentY = Math.min(
-                    Math.max(0, transcriptViewport.contentHeight - transcriptViewport.height),
-                    cursor.y + cursor.height - transcriptViewport.height + 3)
-            }
-        })
-    }
-
-    function handleLocalKey(key) {
-        if (!transcriptionActive || speechController.phase !== "ready") return
-        if (key === "Backspace") {
-            if (!removeTranscriptSelection() && transcriptArea.cursorPosition > 0) {
-                const position = transcriptArea.cursorPosition
-                let start = position - 1
-                const trailing = transcriptArea.text.charCodeAt(start)
-                if (start > 0 && trailing >= 0xdc00 && trailing <= 0xdfff) {
-                    const leading = transcriptArea.text.charCodeAt(start - 1)
-                    if (leading >= 0xd800 && leading <= 0xdbff) --start
-                }
-                transcriptArea.remove(start, position)
-                transcriptArea.cursorPosition = start
-            }
-        } else if (key === "Delete") {
-            if (!removeTranscriptSelection()
-                    && transcriptArea.cursorPosition < transcriptArea.length) {
-                const position = transcriptArea.cursorPosition
-                let end = position + 1
-                const leading = transcriptArea.text.charCodeAt(position)
-                if (end < transcriptArea.length
-                        && leading >= 0xd800 && leading <= 0xdbff) {
-                    const trailing = transcriptArea.text.charCodeAt(end)
-                    if (trailing >= 0xdc00 && trailing <= 0xdfff) ++end
-                }
-                transcriptArea.remove(position, end)
-            }
-        } else if (key === "Left") {
-            transcriptArea.cursorPosition = Math.max(0, transcriptArea.cursorPosition - 1)
-        } else if (key === "Right") {
-            transcriptArea.cursorPosition = Math.min(transcriptArea.length,
-                                                     transcriptArea.cursorPosition + 1)
-        } else if (key === "Up" || key === "Down") {
-            const cursor = transcriptArea.cursorRectangle
-            const lineStep = Math.max(cursor.height, transcriptArea.font.pixelSize + 2)
-            const targetY = key === "Up" ? Math.max(0, cursor.y - lineStep)
-                                                : cursor.y + lineStep
-            transcriptArea.cursorPosition = transcriptArea.positionAt(cursor.x, targetY)
-        } else if (key === "Home") {
-            transcriptArea.cursorPosition = 0
-        } else if (key === "End") {
-            transcriptArea.cursorPosition = transcriptArea.length
-        } else if (key === "Space") {
-            replaceTranscriptSelection(" ")
-        } else if (key === "Enter") {
-            replaceTranscriptSelection("\n")
-        } else if (key === "Tab") {
-            replaceTranscriptSelection("\t")
-        }
-    }
-
-    function handleLocalChord(modifiers, key) {
-        if (!transcriptionActive || speechController.phase !== "ready") return
-        const lowerKey = key.toLowerCase()
-        if (modifiers.length === 1 && modifiers[0] === "Ctrl" && lowerKey === "a")
-            transcriptArea.selectAll()
-        else if (modifiers.length === 1 && modifiers[0] === "Ctrl" && lowerKey === "z")
-            transcriptArea.undo()
-        else if (modifiers.indexOf("Ctrl") >= 0
-                 && modifiers.indexOf("Shift") >= 0 && lowerKey === "z")
-            transcriptArea.redo()
-        else if (modifiers.length === 1 && modifiers[0] === "Ctrl" && lowerKey === "y")
-            transcriptArea.redo()
+        transcriptionStrip.applyTranscription()
     }
 
     signal appearanceRequested
     signal aboutRequested
     signal configurationRequested
     signal layoutRequested
+    signal speechSetupRequested
     signal exitRequested
-
-    Connections {
-        target: root.speechController
-        function onTranscriptChanged() {
-            transcriptArea.text = root.speechController.transcript
-            if (root.speechController.phase === "ready")
-                transcriptArea.cursorPosition = transcriptArea.length
-        }
-    }
-
-    Connections {
-        target: root.inputController
-        function onLocalTextRequested(text) {
-            root.replaceTranscriptSelection(text)
-        }
-        function onLocalKeyRequested(key) {
-            root.handleLocalKey(key)
-        }
-        function onLocalChordRequested(modifiers, key) {
-            root.handleLocalChord(modifiers, key)
-        }
-    }
 
     radius: 18
     color: Qt.rgba(0.02, 0.035, 0.07, root.appearanceStore.backdropOpacity)
@@ -201,704 +62,49 @@ Rectangle {
         border.color: root.appearanceStore.secondary
     }
 
-    Rectangle {
+    KeyboardHeader {
         id: header
-        visible: !root.appearanceStore.customPadOnlyEnabled && !root.transcriptionActive
+        visible: !root.appearanceStore.customPadOnlyEnabled
+                 && !transcriptionStrip.active
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.top: parent.top
         anchors.margins: 10
-        height: 42
-        radius: 8
-        color: "transparent"
-        border.width: root.appearanceStore.frameBordersVisible ? 2 : 0
-        border.color: root.appearanceStore.primary
-
-        MouseArea {
-            anchors.left: exitButton.right
-            anchors.right: padSideButton.left
-            anchors.top: parent.top
-            anchors.bottom: parent.bottom
-            anchors.leftMargin: 6
-            anchors.rightMargin: 8
-            cursorShape: Qt.SizeAllCursor
-            property bool moving: false
-            onPressed: function(mouse) {
-                moving = true
-                root.surfaceController.beginMove(mapToGlobal(mouse.x, mouse.y))
-            }
-            onPositionChanged: function(mouse) {
-                if (moving)
-                    root.surfaceController.updateMove(mapToGlobal(mouse.x, mouse.y))
-            }
-            onReleased: {
-                moving = false
-                root.surfaceController.finishInteraction()
-            }
-            onCanceled: {
-                moving = false
-                root.surfaceController.finishInteraction()
-            }
-        }
-
-        Label {
-            id: titleLabel
-            anchors.left: exitButton.right
-            anchors.leftMargin: 10
-            anchors.right: padSideButton.left
-            anchors.rightMargin: 8
-            anchors.verticalCenter: parent.verticalCenter
-            text: "⠿  IMBOARD"
-            color: Qt.lighter(root.appearanceStore.primary, 1.25)
-            font.pixelSize: 12
-            font.bold: true
-            style: Text.Outline
-            styleColor: "#f0000000"
-            elide: Text.ElideRight
-
-            MouseArea {
-                width: Math.min(titleLabel.implicitWidth + 12, titleLabel.width)
-                height: parent.height
-                anchors.left: parent.left
-                anchors.verticalCenter: parent.verticalCenter
-                onClicked: root.aboutRequested()
-            }
-        }
-
-        Rectangle {
-            id: exitButton
-            anchors.left: parent.left
-            anchors.top: parent.top
-            anchors.bottom: parent.bottom
-            width: 42
-            radius: 7
-            color: exitMouse.pressed ? "#55ff6d91" : "transparent"
-            border.width: root.appearanceStore.keyBordersVisible ? 2 : 0
-            border.color: "#ff6d91"
-
-            Label {
-                anchors.centerIn: parent
-                text: "✕"
-                color: "#ff6d91"
-                font.bold: true
-                font.pixelSize: 15
-                style: Text.Outline
-                styleColor: "#f0000000"
-            }
-
-            MouseArea {
-                id: exitMouse
-                anchors.fill: parent
-                onClicked: {
-                    root.exitRequested()
-                    Qt.quit()
-                }
-            }
-        }
-
-        Rectangle {
-            id: styleButton
-            anchors.right: configButton.left
-            anchors.top: parent.top
-            anchors.bottom: parent.bottom
-            anchors.rightMargin: 5
-            width: 78
-            radius: 7
-            color: styleMouse.pressed
-                   ? Qt.alpha(root.appearanceStore.secondary, 0.24) : "transparent"
-            border.width: root.appearanceStore.keyBordersVisible ? 2 : 0
-            border.color: root.appearanceStore.secondary
-
-            Label {
-                anchors.centerIn: parent
-                text: "STYLE"
-                color: root.appearanceStore.secondary
-                font.bold: true
-                font.pixelSize: 10
-                style: Text.Outline
-                styleColor: "#f0000000"
-            }
-
-            MouseArea {
-                id: styleMouse
-                anchors.fill: parent
-                onClicked: root.appearanceRequested()
-            }
-        }
-
-        Rectangle {
-            id: configButton
-            anchors.right: minimizeButton.left
-            anchors.top: parent.top
-            anchors.bottom: parent.bottom
-            anchors.rightMargin: 5
-            width: 78
-            radius: 7
-            color: configMouse.pressed
-                   ? Qt.alpha(root.appearanceStore.secondary, 0.24) : "transparent"
-            border.width: root.appearanceStore.keyBordersVisible ? 2 : 0
-            border.color: root.appearanceStore.secondary
-
-            Label {
-                anchors.centerIn: parent
-                text: "CONFIG"
-                color: root.appearanceStore.secondary
-                font.bold: true
-                font.pixelSize: 9
-                style: Text.Outline
-                styleColor: "#f0000000"
-            }
-
-            MouseArea {
-                id: configMouse
-                anchors.fill: parent
-                onClicked: root.configurationRequested()
-            }
-        }
-
-        Rectangle {
-            id: minimizeButton
-            anchors.right: parent.right
-            anchors.top: parent.top
-            anchors.bottom: parent.bottom
-            width: 62
-            radius: 7
-            color: minimizeMouse.pressed
-                   ? Qt.alpha(root.appearanceStore.primary, 0.24) : "transparent"
-            border.width: root.appearanceStore.keyBordersVisible ? 2 : 0
-            border.color: root.appearanceStore.primary
-
-            Label {
-                anchors.centerIn: parent
-                text: "MIN"
-                color: root.appearanceStore.primary
-                font.bold: true
-                font.pixelSize: 9
-                style: Text.Outline
-                styleColor: "#f0000000"
-            }
-
-            MouseArea {
-                id: minimizeMouse
-                anchors.fill: parent
-                onClicked: root.surfaceController.hideWindow()
-            }
-        }
-
-        Rectangle {
-            id: layoutButton
-            anchors.right: styleButton.left
-            anchors.top: parent.top
-            anchors.bottom: parent.bottom
-            anchors.rightMargin: 5
-            width: 90
-            radius: 7
-            color: layoutMouse.pressed
-                   ? Qt.alpha(root.appearanceStore.primary, 0.24) : "transparent"
-            border.width: root.appearanceStore.keyBordersVisible ? 2 : 0
-            border.color: root.appearanceStore.primary
-
-            Label {
-                anchors.centerIn: parent
-                text: "LAYOUT " + root.keyboardLayoutStore.layoutId.toUpperCase()
-                color: root.appearanceStore.primary
-                font.bold: true
-                font.pixelSize: 9
-                style: Text.Outline
-                styleColor: "#f0000000"
-            }
-
-            MouseArea {
-                id: layoutMouse
-                anchors.fill: parent
-                onClicked: root.layoutRequested()
-            }
-        }
-
-        Rectangle {
-            id: padSideButton
-            anchors.right: layoutButton.left
-            anchors.top: parent.top
-            anchors.bottom: parent.bottom
-            anchors.rightMargin: 5
-            width: 62
-            radius: 7
-            color: padSideMouse.pressed
-                   ? Qt.alpha(root.appearanceStore.secondary, 0.24) : "transparent"
-            border.width: root.appearanceStore.keyBordersVisible ? 2 : 0
-            border.color: root.appearanceStore.secondary
-
-            Label {
-                anchors.centerIn: parent
-                text: root.appearanceStore.developerPadOnLeft ? "PAD ←" : "PAD →"
-                color: root.appearanceStore.secondary
-                font.bold: true
-                font.pixelSize: 9
-                style: Text.Outline
-                styleColor: "#f0000000"
-            }
-
-            MouseArea {
-                id: padSideMouse
-                anchors.fill: parent
-                onClicked: root.appearanceStore.toggleDeveloperPadSide()
-            }
-        }
-
-        Rectangle {
-            id: transcriptionButton
-            anchors.horizontalCenter: parent.horizontalCenter
-            anchors.top: parent.top
-            anchors.bottom: parent.bottom
-            width: 116
-            radius: 7
-            color: transcriptionMouse.pressed
-                   ? Qt.alpha(root.appearanceStore.primary, 0.24) : "transparent"
-            border.width: root.appearanceStore.keyBordersVisible ? 2 : 0
-            border.color: root.appearanceStore.primary
-
-            Label {
-                anchors.centerIn: parent
-                text: "TRANSCRIBE"
-                color: root.appearanceStore.primary
-                font.bold: true
-                font.pixelSize: 9
-                style: Text.Outline
-                styleColor: "#f0000000"
-            }
-
-            MouseArea {
-                id: transcriptionMouse
-                anchors.fill: parent
-                onClicked: root.beginTranscription()
-            }
-        }
+        appearanceStore: root.appearanceStore
+        keyboardLayoutStore: root.keyboardLayoutStore
+        speechController: root.speechController
+        surfaceController: root.surfaceController
+        onAboutRequested: root.aboutRequested()
+        onAppearanceRequested: root.appearanceRequested()
+        onConfigurationRequested: root.configurationRequested()
+        onLayoutRequested: root.layoutRequested()
+        onTranscriptionRequested: transcriptionStrip.beginTranscription()
+        onSpeechSetupRequested: root.speechSetupRequested()
+        onExitRequested: root.exitRequested()
     }
 
-    Rectangle {
+    TranscriptionStrip {
         id: transcriptionStrip
-        objectName: "transcriptionStrip"
-        visible: !root.appearanceStore.customPadOnlyEnabled && root.transcriptionActive
+        visible: !root.appearanceStore.customPadOnlyEnabled && active
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.top: parent.top
         anchors.margins: 10
-        height: 104
-        radius: 8
-        color: Qt.alpha("#07101f", 0.94)
-        border.width: root.appearanceStore.frameBordersVisible ? 2 : 0
-        border.color: root.appearanceStore.primary
-
-        ColumnLayout {
-            anchors.fill: parent
-            anchors.margins: 5
-            spacing: 4
-
-            RowLayout {
-                Layout.fillWidth: true
-                Layout.minimumHeight: 30
-                Layout.preferredHeight: 30
-                Layout.maximumHeight: 30
-                spacing: 5
-
-                Label {
-                    text: "TRANSCRIPTION"
-                    color: root.appearanceStore.primary
-                    font.bold: true
-                    font.pixelSize: 10
-                }
-
-                Label {
-                    Layout.fillWidth: true
-                    text: root.speechController.phase === "ready"
-                          && transcriptArea.text.length > 0
-                          && !root.transcriptCanApply
-                          ? "Non-ASCII text needs Experimental Unicode in CONFIG."
-                          : root.speechController.status
-                    color: root.speechController.phase === "error" ? "#ff8aa5" : "#eaffff"
-                    font.pixelSize: 9
-                    elide: Text.ElideRight
-                }
-
-                Label {
-                    Layout.preferredWidth: 60
-                    horizontalAlignment: Text.AlignHCenter
-                    text: root.speechController.recording
-                          ? root.speechController.recordingSecondsRemaining + "s"
-                          : root.speechController.transcribing ? "WORKING" : "READY"
-                    color: root.speechController.recording ? "#ff6d91"
-                                                           : root.appearanceStore.secondary
-                    font.bold: true
-                    font.pixelSize: 9
-                }
-
-                KeyCap {
-                    Layout.preferredWidth: 68
-                    Layout.fillHeight: true
-                    keyLabel: "CANCEL"
-                    accent: "#ff6d91"
-                    showBorders: root.appearanceStore.keyBordersVisible
-                    onClicked: root.cancelTranscription()
-                }
-
-                KeyCap {
-                    visible: root.speechController.recording
-                    Layout.preferredWidth: 126
-                    Layout.fillHeight: true
-                    keyLabel: "STOP & TRANSCRIBE"
-                    accent: root.appearanceStore.secondary
-                    showBorders: root.appearanceStore.keyBordersVisible
-                    onClicked: root.speechController.stopAndTranscribe()
-                }
-
-                KeyCap {
-                    visible: !root.speechController.recording
-                             && !root.speechController.transcribing
-                    Layout.preferredWidth: 92
-                    Layout.fillHeight: true
-                    keyLabel: "AGAIN"
-                    accent: root.appearanceStore.secondary
-                    showBorders: root.appearanceStore.keyBordersVisible
-                    onClicked: root.recordAgain()
-                }
-
-                KeyCap {
-                    Layout.preferredWidth: 68
-                    Layout.fillHeight: true
-                    enabled: !root.speechController.recording
-                             && !root.speechController.transcribing
-                             && transcriptArea.text.trim().length > 0
-                             && root.transcriptCanApply
-                             && root.inputController.backendReady
-                    opacity: enabled ? 1.0 : 0.45
-                    keyLabel: "APPLY"
-                    accent: "#72ff9f"
-                    showBorders: root.appearanceStore.keyBordersVisible
-                    onClicked: root.applyTranscription()
-                }
-            }
-
-            Flickable {
-                id: transcriptViewport
-                objectName: "transcriptViewport"
-                Layout.fillWidth: true
-                Layout.fillHeight: true
-                clip: true
-                contentWidth: width
-                contentHeight: Math.max(height, transcriptArea.height + 4)
-                boundsBehavior: Flickable.StopAtBounds
-                flickableDirection: Flickable.VerticalFlick
-
-                ScrollBar.vertical: ScrollBar {
-                    policy: transcriptViewport.contentHeight > transcriptViewport.height
-                            ? ScrollBar.AsNeeded : ScrollBar.AlwaysOff
-                }
-
-                TextArea {
-                    id: transcriptArea
-                    objectName: "transcriptArea"
-                    x: 0
-                    y: 0
-                    width: Math.max(1, transcriptViewport.width - 14)
-                    height: Math.max(transcriptViewport.height,
-                                     implicitHeight + 2)
-                    enabled: root.speechController.phase === "ready"
-                    placeholderText: root.speechController.recording
-                                     ? "Speak, then choose STOP & TRANSCRIBE…"
-                                     : root.speechController.transcribing
-                                       ? "Processing privately on this device…"
-                                       : "Use the keyboard below to correct this text."
-                    color: "#f2ffff"
-                    placeholderTextColor: "#88d9e6"
-                    selectionColor: Qt.alpha(root.appearanceStore.primary, 0.45)
-                    selectedTextColor: "white"
-                    font.pixelSize: 12
-                    wrapMode: TextEdit.Wrap
-                    persistentSelection: true
-                    padding: 5
-                    onCursorPositionChanged: root.keepTranscriptCursorVisible()
-                    background: Rectangle {
-                        radius: 5
-                        color: "#d90d1728"
-                        border.width: 1
-                        border.color: root.appearanceStore.secondary
-                    }
-                }
-            }
-        }
+        appearanceStore: root.appearanceStore
+        inputController: root.inputController
+        speechController: root.speechController
     }
 
-    Rectangle {
+    CompactPadHeader {
         id: compactHeader
         visible: root.appearanceStore.customPadOnlyEnabled
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.top: parent.top
         anchors.margins: 10
-        height: 34
-        radius: 8
-        color: "transparent"
-        border.width: root.appearanceStore.frameBordersVisible ? 2 : 0
-        border.color: root.appearanceStore.primary
-        readonly property bool tinyControls: width < 280
-        readonly property int controlGap: tinyControls ? 3 : 5
-        readonly property bool moveControlsVisible: customPadOnlyPage.editMode
-                                                   && customPadOnlyPage.keyCount > 1
-
-        MouseArea {
-            anchors.left: fullModeButton.right
-            anchors.right: compactHeader.moveControlsVisible ? compactMoveLeftButton.left
-                                                             : compactCustomButton.left
-            anchors.top: parent.top
-            anchors.bottom: parent.bottom
-            anchors.leftMargin: 6
-            anchors.rightMargin: 6
-            cursorShape: Qt.SizeAllCursor
-            property bool moving: false
-            onPressed: function(mouse) {
-                moving = true
-                root.surfaceController.beginMove(mapToGlobal(mouse.x, mouse.y))
-            }
-            onPositionChanged: function(mouse) {
-                if (moving)
-                    root.surfaceController.updateMove(mapToGlobal(mouse.x, mouse.y))
-            }
-            onReleased: {
-                moving = false
-                root.surfaceController.finishInteraction()
-            }
-            onCanceled: {
-                moving = false
-                root.surfaceController.finishInteraction()
-            }
-        }
-
-        Rectangle {
-            id: fullModeButton
-            anchors.left: parent.left
-            anchors.top: parent.top
-            anchors.bottom: parent.bottom
-            width: compactHeader.tinyControls ? 28 : 60
-            radius: 7
-            color: fullModeMouse.pressed
-                   ? Qt.alpha(root.appearanceStore.secondary, 0.24) : "transparent"
-            border.width: root.appearanceStore.keyBordersVisible ? 2 : 0
-            border.color: root.appearanceStore.secondary
-
-            Label {
-                anchors.centerIn: parent
-                text: compactHeader.tinyControls ? "F" : "FULL"
-                color: root.appearanceStore.secondary
-                font.bold: true
-                font.pixelSize: 9
-                style: Text.Outline
-                styleColor: "#f0000000"
-            }
-
-            MouseArea {
-                id: fullModeMouse
-                anchors.fill: parent
-                onClicked: {
-                    if (customPadOnlyPage.editMode && !customPadOnlyPage.finishEdit())
-                        return
-                    root.appearanceStore.setCustomPadOnlyEnabled(false)
-                }
-            }
-        }
-
-        Label {
-            anchors.left: fullModeButton.right
-            anchors.leftMargin: 10
-            anchors.right: compactHeader.moveControlsVisible ? compactMoveLeftButton.left
-                                                             : compactCustomButton.left
-            anchors.rightMargin: 10
-            anchors.verticalCenter: parent.verticalCenter
-            text: customPadOnlyPage.editMode
-                  ? compactHeader.tinyControls ? "EDIT" : "CUSTOMISE"
-                  : compactHeader.tinyControls ? "PAD" : "CUSTOM PAD"
-            color: Qt.lighter(root.appearanceStore.primary, 1.25)
-            font.pixelSize: 11
-            font.bold: true
-            style: Text.Outline
-            styleColor: "#f0000000"
-            elide: Text.ElideRight
-        }
-
-        Rectangle {
-            id: compactMoveLeftButton
-            visible: compactHeader.moveControlsVisible
-            anchors.right: compactMoveRightButton.left
-            anchors.top: parent.top
-            anchors.bottom: parent.bottom
-            anchors.rightMargin: compactHeader.controlGap
-            width: 38
-            radius: 7
-            color: compactMoveLeftMouse.pressed
-                   ? Qt.alpha(root.appearanceStore.secondary, 0.24) : "transparent"
-            border.width: root.appearanceStore.keyBordersVisible ? 2 : 0
-            border.color: customPadOnlyPage.selectedSlot > 0
-                          ? root.appearanceStore.secondary : "#666666"
-
-            Label {
-                anchors.centerIn: parent
-                text: "←"
-                color: customPadOnlyPage.selectedSlot > 0
-                       ? root.appearanceStore.secondary : "#777777"
-                font.bold: true
-                font.pixelSize: 12
-                style: Text.Outline
-                styleColor: "#f0000000"
-            }
-
-            MouseArea {
-                id: compactMoveLeftMouse
-                anchors.fill: parent
-                enabled: customPadOnlyPage.selectedSlot > 0
-                onClicked: customPadOnlyPage.moveSelectedSlot(-1)
-            }
-        }
-
-        Rectangle {
-            id: compactMoveRightButton
-            visible: compactHeader.moveControlsVisible
-            anchors.right: compactCustomButton.left
-            anchors.top: parent.top
-            anchors.bottom: parent.bottom
-            anchors.rightMargin: compactHeader.controlGap
-            width: 38
-            radius: 7
-            color: compactMoveRightMouse.pressed
-                   ? Qt.alpha(root.appearanceStore.secondary, 0.24) : "transparent"
-            border.width: root.appearanceStore.keyBordersVisible ? 2 : 0
-            border.color: customPadOnlyPage.selectedSlot >= 0
-                          && customPadOnlyPage.selectedSlot < customPadOnlyPage.keyCount - 1
-                          ? root.appearanceStore.secondary : "#666666"
-
-            Label {
-                anchors.centerIn: parent
-                text: "→"
-                color: customPadOnlyPage.selectedSlot >= 0
-                       && customPadOnlyPage.selectedSlot < customPadOnlyPage.keyCount - 1
-                       ? root.appearanceStore.secondary : "#777777"
-                font.bold: true
-                font.pixelSize: 12
-                style: Text.Outline
-                styleColor: "#f0000000"
-            }
-
-            MouseArea {
-                id: compactMoveRightMouse
-                anchors.fill: parent
-                enabled: customPadOnlyPage.selectedSlot >= 0
-                         && customPadOnlyPage.selectedSlot < customPadOnlyPage.keyCount - 1
-                onClicked: customPadOnlyPage.moveSelectedSlot(1)
-            }
-        }
-
-        Rectangle {
-            id: compactCustomButton
-            anchors.right: compactCancelButton.visible ? compactCancelButton.left
-                                                       : compactMinimizeButton.left
-            anchors.top: parent.top
-            anchors.bottom: parent.bottom
-            anchors.rightMargin: compactHeader.controlGap
-            width: compactHeader.tinyControls
-                   ? customPadOnlyPage.editMode ? 42 : 48
-                   : customPadOnlyPage.editMode ? 62 : 96
-            radius: 7
-            color: compactCustomMouse.pressed
-                   ? Qt.alpha(customPadOnlyPage.editMode ? "#72ff9f"
-                                                        : root.appearanceStore.secondary,
-                              0.24)
-                   : "transparent"
-            border.width: root.appearanceStore.keyBordersVisible ? 2 : 0
-            border.color: customPadOnlyPage.editMode ? "#72ff9f"
-                                                     : root.appearanceStore.secondary
-
-            Label {
-                anchors.centerIn: parent
-                text: customPadOnlyPage.editMode ? "SAVE"
-                                                 : compactHeader.tinyControls
-                                                   ? "EDIT" : "CUSTOMISE"
-                color: customPadOnlyPage.editMode ? "#72ff9f"
-                                                  : root.appearanceStore.secondary
-                font.bold: true
-                font.pixelSize: 9
-                style: Text.Outline
-                styleColor: "#f0000000"
-            }
-
-            MouseArea {
-                id: compactCustomMouse
-                anchors.fill: parent
-                onClicked: {
-                    if (customPadOnlyPage.editMode)
-                        customPadOnlyPage.finishEdit()
-                    else
-                        customPadOnlyPage.beginEdit()
-                }
-            }
-        }
-
-        Rectangle {
-            id: compactCancelButton
-            visible: customPadOnlyPage.editMode
-            anchors.right: compactMinimizeButton.left
-            anchors.top: parent.top
-            anchors.bottom: parent.bottom
-            anchors.rightMargin: compactHeader.controlGap
-            width: compactHeader.tinyControls ? 28 : 68
-            radius: 7
-            color: compactCancelMouse.pressed ? Qt.alpha("#ff6d91", 0.24)
-                                              : "transparent"
-            border.width: root.appearanceStore.keyBordersVisible ? 2 : 0
-            border.color: "#ff6d91"
-
-            Label {
-                anchors.centerIn: parent
-                text: compactHeader.tinyControls ? "X" : "CANCEL"
-                color: "#ff6d91"
-                font.bold: true
-                font.pixelSize: 9
-                style: Text.Outline
-                styleColor: "#f0000000"
-            }
-
-            MouseArea {
-                id: compactCancelMouse
-                anchors.fill: parent
-                onClicked: customPadOnlyPage.cancelEdit()
-            }
-        }
-
-        Rectangle {
-            id: compactMinimizeButton
-            anchors.right: parent.right
-            anchors.top: parent.top
-            anchors.bottom: parent.bottom
-            width: compactHeader.tinyControls ? 28 : 56
-            radius: 7
-            color: compactMinimizeMouse.pressed
-                   ? Qt.alpha(root.appearanceStore.primary, 0.24) : "transparent"
-            border.width: root.appearanceStore.keyBordersVisible ? 2 : 0
-            border.color: root.appearanceStore.primary
-
-            Label {
-                anchors.centerIn: parent
-                text: compactHeader.tinyControls ? "M" : "MIN"
-                color: root.appearanceStore.primary
-                font.bold: true
-                font.pixelSize: 9
-                style: Text.Outline
-                styleColor: "#f0000000"
-            }
-
-            MouseArea {
-                id: compactMinimizeMouse
-                anchors.fill: parent
-                onClicked: root.surfaceController.hideWindow()
-            }
-        }
+        appearanceStore: root.appearanceStore
+        customPadPage: customPadOnlyPage
+        surfaceController: root.surfaceController
     }
 
     CustomPadOnlyPage {
@@ -922,7 +128,7 @@ Rectangle {
         visible: !root.appearanceStore.customPadOnlyEnabled
         anchors.left: parent.left
         anchors.right: parent.right
-        anchors.top: root.transcriptionActive ? transcriptionStrip.bottom : header.bottom
+        anchors.top: transcriptionStrip.active ? transcriptionStrip.bottom : header.bottom
         anchors.bottom: parent.bottom
         anchors.leftMargin: 12
         anchors.rightMargin: 12
@@ -950,6 +156,7 @@ Rectangle {
                 border.width: root.appearanceStore.frameBordersVisible ? 1 : 0
                 border.color: Qt.alpha(root.appearanceStore.secondary, 0.66)
             }
+
             AlphaBoard {
                 id: alphaBoard
                 anchors.fill: parent
@@ -978,6 +185,7 @@ Rectangle {
                 border.width: root.appearanceStore.frameBordersVisible ? 1 : 0
                 border.color: Qt.alpha(root.appearanceStore.primary, 0.66)
             }
+
             DeveloperPad {
                 anchors.fill: parent
                 anchors.margins: 8

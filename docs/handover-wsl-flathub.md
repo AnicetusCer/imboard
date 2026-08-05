@@ -1,5 +1,9 @@
 # Imboard Fedora/Flatpak handover
 
+> Historical note (2026-08-04): this is a dated environment handover, not a
+> description of current project state. Use `docs/README.md`, `AGENTS.md`, and
+> the current release checklist for authoritative guidance.
+
 Date: 2026-08-04
 
 This document is for continuing Imboard development from a new machine/session,

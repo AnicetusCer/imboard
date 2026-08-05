@@ -1,5 +1,29 @@
 # Changelog
 
+## Unreleased
+
+### Changed
+
+- Move the Whisper `small.en` model from the core application into an optional
+  Flatpak extension, keeping the keyboard release lightweight for users who do
+  not need offline transcription.
+- Add in-app model installation guidance and separate source/release build
+  commands for the speech add-on.
+- Split the keyboard header, compact controls, transcription strip, developer
+  catalog, and custom-key picker into focused QML components, and document
+  which maintenance references are authoritative versus historical.
+
+### Fixed
+
+- Keep the transcription header control clear of the developer-pad side
+  control at the minimum keyboard width.
+- Keep regional-layout choices visible and usable at the minimum keyboard
+  height.
+- Keep a reviewed transcript available when portal delivery is interrupted,
+  instead of clearing text that may not have reached the target application.
+- Report an immediate failure to open the GitHub releases page, and stop hiding
+  genuine model-extension removal failures in the uninstall script.
+
 ## 0.5.0 - 2026-08-04
 
 Minor release adding private offline voice transcription.
