@@ -137,12 +137,21 @@ target_compile_definitions(imboard PRIVATE
     IMBOARD_VERSION="${PROJECT_VERSION}")
 if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     include(CheckPIESupported)
+    include(CheckCXXSourceCompiles)
     check_pie_supported()
+    check_cxx_source_compiles("\
+        #ifndef _FORTIFY_SOURCE
+        #error Toolchain does not provide fortify
+        #endif
+        int main() { return 0; }
+    " IMBOARD_TOOLCHAIN_PROVIDES_FORTIFY)
     set_property(TARGET imboard PROPERTY POSITION_INDEPENDENT_CODE TRUE)
     target_compile_options(imboard PRIVATE
         $<$<CONFIG:Release,RelWithDebInfo,MinSizeRel>:-fstack-protector-strong>)
-    target_compile_definitions(imboard PRIVATE
-        $<$<CONFIG:Release,RelWithDebInfo,MinSizeRel>:_FORTIFY_SOURCE=2>)
+    if(NOT IMBOARD_TOOLCHAIN_PROVIDES_FORTIFY)
+        target_compile_definitions(imboard PRIVATE
+            $<$<CONFIG:Release,RelWithDebInfo,MinSizeRel>:_FORTIFY_SOURCE=2>)
+    endif()
     target_link_options(imboard PRIVATE
         $<$<CONFIG:Release,RelWithDebInfo,MinSizeRel>:-Wl,-z,relro,-z,now>)
 endif()
