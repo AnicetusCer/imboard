@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 id: io.github.anicetuscer.imboard.Model.SmallEn
-branch: "0.5"
+branch: "0.6"
 runtime: io.github.anicetuscer.imboard
 runtime-version: master
 sdk: org.kde.Sdk//6.10

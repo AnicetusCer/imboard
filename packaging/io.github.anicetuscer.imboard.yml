@@ -10,7 +10,7 @@ command: imboard
 add-extensions:
   io.github.anicetuscer.imboard.Model:
     directory: share/imboard/models
-    version: "0.5"
+    version: "0.6"
     subdirectories: true
     no-autodownload: true
     autodelete: true

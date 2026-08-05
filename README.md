@@ -27,7 +27,7 @@ In practice, that means:
 
 ## Status
 
-Current release: `0.5.0`.
+Current release: `0.6.0`.
 
 IMBOARD presents required keyboard-access setup on first visible launch. The
 standard desktop portal grants keyboard-only control and returns a restore token
@@ -102,18 +102,18 @@ It installs into your user account.
 
 2. Download these files from the GitHub release:
 
-   - `imboard-0.5.0-x86_64.flatpak`
-   - `imboard-0.5.0-x86_64-SHA256SUMS`
-   - `imboard-0.5.0-x86_64-SHA256SUMS.asc`
+   - `imboard-0.6.0-x86_64.flatpak`
+   - `imboard-0.6.0-x86_64-SHA256SUMS`
+   - `imboard-0.6.0-x86_64-SHA256SUMS.asc`
    - `imboard-release-signing-public.asc`
 
 3. Verify the release signature and downloaded bundle:
 
    ```sh
    gpg --import ./imboard-release-signing-public.asc
-   gpg --verify ./imboard-0.5.0-x86_64-SHA256SUMS.asc \
-       ./imboard-0.5.0-x86_64-SHA256SUMS
-   sha256sum --check --ignore-missing ./imboard-0.5.0-x86_64-SHA256SUMS
+   gpg --verify ./imboard-0.6.0-x86_64-SHA256SUMS.asc \
+       ./imboard-0.6.0-x86_64-SHA256SUMS
+   sha256sum --check --ignore-missing ./imboard-0.6.0-x86_64-SHA256SUMS
    ```
 
    Confirm that GPG reports fingerprint
@@ -124,7 +124,7 @@ It installs into your user account.
 4. Install it:
 
    ```sh
-   flatpak install --user ./imboard-0.5.0-x86_64.flatpak
+   flatpak install --user ./imboard-0.6.0-x86_64.flatpak
    ```
 
 5. Launch IMBOARD from the KDE app launcher, or run:
@@ -134,11 +134,11 @@ It installs into your user account.
    ```
 
 6. To enable offline transcription, also download
-   `imboard-model-small-en-0.5.0-x86_64.flatpak` from the same release and
+   `imboard-model-small-en-0.6.0-x86_64.flatpak` from the same release and
    install it:
 
    ```sh
-   flatpak install --user ./imboard-model-small-en-0.5.0-x86_64.flatpak
+   flatpak install --user ./imboard-model-small-en-0.6.0-x86_64.flatpak
    ```
 
    Restart IMBOARD after installing the model. Users who only need the
@@ -175,7 +175,7 @@ not need root once Flatpak and `flatpak-builder` are installed.
    ```sh
    git clone https://github.com/AnicetusCer/imboard.git
    cd imboard
-   git checkout v0.5.0
+   git checkout v0.6.0
    ```
 
 3. Build and install the user Flatpak:

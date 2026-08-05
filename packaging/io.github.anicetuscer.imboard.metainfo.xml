@@ -82,6 +82,15 @@
   <content_rating type="oars-1.1" />
 
   <releases>
+    <release version="0.6.0" date="2026-08-05">
+      <description>
+        <p>
+          Minor release moving offline transcription into an optional small.en
+          model add-on, hardening release validation and packaging, and reducing
+          startup work and peak audio-conversion memory.
+        </p>
+      </description>
+    </release>
     <release version="0.5.0" date="2026-08-04">
       <description>
         <p>

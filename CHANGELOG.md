@@ -1,6 +1,9 @@
 # Changelog
 
-## Unreleased
+## 0.6.0 - 2026-08-05
+
+Minor release making offline transcription optional, hardening its release
+workflow, and improving startup and audio-conversion efficiency.
 
 ### Changed
 
@@ -12,6 +15,11 @@
 - Split the keyboard header, compact controls, transcription strip, developer
   catalog, and custom-key picker into focused QML components, and document
   which maintenance references are authoritative versus historical.
+- Compile QML resources into the release executable and convert microphone
+  input directly into the final Whisper buffer to reduce startup work and peak
+  transcription memory.
+- Support the Flatpak Builder application on immutable SteamOS development
+  hosts, including access to the dedicated release-signing agent.
 
 ### Fixed
 
@@ -23,6 +31,8 @@
   instead of clearing text that may not have reached the target application.
 - Report an immediate failure to open the GitHub releases page, and stop hiding
   genuine model-extension removal failures in the uninstall script.
+- Preserve full and compact keyboard dimensions reliably while switching modes,
+  and keep transcript cursor visibility stable at constrained window sizes.
 
 ## 0.5.0 - 2026-08-04
 
