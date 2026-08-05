@@ -29,12 +29,27 @@ if [ -z "$VERSION" ] || [ -z "$MODEL_BRANCH" ]; then
     exit 1
 fi
 
-for command_name in flatpak flatpak-builder gpg sha256sum; do
+for command_name in flatpak gpg sha256sum; do
     if ! command -v "$command_name" >/dev/null 2>&1; then
         echo "Missing required command: $command_name" >&2
         exit 1
     fi
 done
+if command -v flatpak-builder >/dev/null 2>&1; then
+    run_flatpak_builder() {
+        flatpak-builder "$@"
+    }
+elif flatpak info --user org.flatpak.Builder >/dev/null 2>&1 \
+    || flatpak info org.flatpak.Builder >/dev/null 2>&1; then
+    run_flatpak_builder() {
+        flatpak run --filesystem="$(pwd)" --filesystem="$SIGNING_HOME" \
+            org.flatpak.Builder "$@"
+    }
+else
+    echo "Missing required command: flatpak-builder" >&2
+    echo "Install flatpak-builder or the org.flatpak.Builder Flatpak, then rerun this script." >&2
+    exit 1
+fi
 
 if ! gpg --homedir "$SIGNING_HOME" --batch --list-secret-keys \
     "$SIGNING_KEY" >/dev/null 2>&1; then
@@ -52,10 +67,10 @@ CHECKSUM_SIGNATURE="${CHECKSUMS}.asc"
 
 flatpak remote-add --user --if-not-exists flathub "$RUNTIME_REPO"
 flatpak install --user --noninteractive flathub org.kde.Sdk//6.10 org.kde.Platform//6.10
-flatpak-builder --user --install --force-clean --repo="$REPO_DIR" \
+run_flatpak_builder --user --install --force-clean --repo="$REPO_DIR" \
     --gpg-sign="$SIGNING_KEY" --gpg-homedir="$SIGNING_HOME" \
     "$BUILD_DIR" "$MANIFEST"
-flatpak-builder --user --force-clean --repo="$REPO_DIR" \
+run_flatpak_builder --user --force-clean --repo="$REPO_DIR" \
     --gpg-sign="$SIGNING_KEY" --gpg-homedir="$SIGNING_HOME" \
     "$MODEL_BUILD_DIR" "$MODEL_MANIFEST"
 flatpak build-bundle --runtime-repo="$RUNTIME_REPO" "$REPO_DIR" "$BUNDLE" "$APP_ID"
