@@ -78,10 +78,10 @@ verification directory.
 In the SteamOS development distrobox:
 
 ```sh
-distrobox enter deckst-dev -- cmake -S /home/deck/imboard -B /home/deck/imboard/build -G Ninja
-distrobox enter deckst-dev -- cmake --build /home/deck/imboard/build --target imboard_qmllint
-distrobox enter deckst-dev -- ninja -C /home/deck/imboard/build imboard
-distrobox enter deckst-dev -- ctest --test-dir /home/deck/imboard/build --output-on-failure
+distrobox enter deckst-dev -- cmake -S /home/deck/github/imboard -B /home/deck/github/imboard/build -G Ninja
+distrobox enter deckst-dev -- cmake --build /home/deck/github/imboard/build --target imboard_qmllint
+distrobox enter deckst-dev -- ninja -C /home/deck/github/imboard/build imboard
+distrobox enter deckst-dev -- ctest --test-dir /home/deck/github/imboard/build --output-on-failure
 ```
 
 Expected result:
@@ -95,21 +95,21 @@ Expected result:
 Build from the distrobox:
 
 ```sh
-distrobox enter deckst-dev -- flatpak-builder --user --install --force-clean /home/deck/imboard/flatpak-build /home/deck/imboard/packaging/io.github.anicetuscer.imboard.yml
+distrobox enter deckst-dev -- flatpak-builder --user --install --force-clean /home/deck/github/imboard/flatpak-build /home/deck/github/imboard/packaging/io.github.anicetuscer.imboard.yml
 ```
 
 If installation fails inside distrobox with a session-bus connection error,
 install the exported build from the host:
 
 ```sh
-flatpak install --user --reinstall --noninteractive /home/deck/imboard/.flatpak-builder/cache io.github.anicetuscer.imboard
+flatpak install --user --reinstall --noninteractive /home/deck/github/imboard/.flatpak-builder/cache io.github.anicetuscer.imboard
 flatpak run io.github.anicetuscer.imboard --toggle
 ```
 
 Build and install the optional model extension separately:
 
 ```sh
-distrobox enter deckst-dev -- flatpak-builder --user --install --force-clean /home/deck/imboard/flatpak-model-build /home/deck/imboard/packaging/io.github.anicetuscer.imboard.Model.SmallEn.yml
+distrobox enter deckst-dev -- flatpak-builder --user --install --force-clean /home/deck/github/imboard/flatpak-model-build /home/deck/github/imboard/packaging/io.github.anicetuscer.imboard.Model.SmallEn.yml
 ```
 
 Confirm the installed app ID:

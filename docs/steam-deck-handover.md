@@ -46,7 +46,7 @@ repository. The repository contains only
 Open a terminal in KDE Desktop Mode:
 
 ```sh
-cd /home/deck/imboard
+cd /home/deck/github/imboard
 git status --short --branch
 git fetch origin
 git switch --track origin/feature/transcription-release-hardening
@@ -119,10 +119,10 @@ passphrase as a command-line argument.
 Use the existing SteamOS development distrobox:
 
 ```sh
-distrobox enter deckst-dev -- cmake -S /home/deck/imboard -B /home/deck/imboard/build -G Ninja -DCMAKE_BUILD_TYPE=RelWithDebInfo
-distrobox enter deckst-dev -- cmake --build /home/deck/imboard/build --target imboard_qmllint
-distrobox enter deckst-dev -- cmake --build /home/deck/imboard/build -j2
-distrobox enter deckst-dev -- ctest --test-dir /home/deck/imboard/build --output-on-failure
+distrobox enter deckst-dev -- cmake -S /home/deck/github/imboard -B /home/deck/github/imboard/build -G Ninja -DCMAKE_BUILD_TYPE=RelWithDebInfo
+distrobox enter deckst-dev -- cmake --build /home/deck/github/imboard/build --target imboard_qmllint
+distrobox enter deckst-dev -- cmake --build /home/deck/github/imboard/build -j2
+distrobox enter deckst-dev -- ctest --test-dir /home/deck/github/imboard/build --output-on-failure
 ```
 
 Expected result: QML lint succeeds, the application builds, and all 11 tests
@@ -141,7 +141,7 @@ flatpak uninstall --user --noninteractive \
 Build and install the lightweight application from the checkout:
 
 ```sh
-cd /home/deck/imboard
+cd /home/deck/github/imboard
 sh ./scripts/install-user-flatpak.sh
 flatpak run io.github.anicetuscer.imboard --toggle
 ```
@@ -161,7 +161,7 @@ extension:
 
 ```sh
 flatpak run io.github.anicetuscer.imboard --quit
-cd /home/deck/imboard
+cd /home/deck/github/imboard
 sh ./scripts/install-user-speech-model.sh
 flatpak run io.github.anicetuscer.imboard --toggle
 ```
@@ -209,7 +209,7 @@ Do this only after the functional test pass because it rebuilds both release
 artifacts and requests the dedicated GPG passphrase:
 
 ```sh
-cd /home/deck/imboard
+cd /home/deck/github/imboard
 sh ./scripts/build-release-bundle.sh
 ```
 

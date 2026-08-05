@@ -175,23 +175,32 @@ int main(int argc, char *argv[])
                      qOverload<>(&QTimer::start));
     QObject::connect(window, &QWindow::heightChanged, &sizeSaveTimer,
                      qOverload<>(&QTimer::start));
+    const auto enforceMinimumSize = [window]() {
+        const QSize minimumSize = window->minimumSize();
+        if (window->size().expandedTo(minimumSize) != window->size())
+            window->resize(window->size().expandedTo(minimumSize));
+    };
+    QObject::connect(window, &QWindow::minimumWidthChanged, window,
+                     [enforceMinimumSize](int) { enforceMinimumSize(); });
+    QObject::connect(window, &QWindow::minimumHeightChanged, window,
+                     [enforceMinimumSize](int) { enforceMinimumSize(); });
     bool customPadMode = appearance.customPadOnlyEnabled();
     QObject::connect(&appearance, &AppearanceStore::appearanceChanged, window,
                      [window, &appearance, &customPadMode, &restoreWindowSize,
-                      &sizeSaveTimer]() {
+                      &sizeSaveTimer, enforceMinimumSize]() {
         const bool nextCustomPadMode = appearance.customPadOnlyEnabled();
         if (customPadMode != nextCustomPadMode)
             sizeSaveTimer.stop();
         QTimer::singleShot(0, window, [window, nextCustomPadMode,
                                        &customPadMode, &restoreWindowSize,
-                                       &sizeSaveTimer]() {
+                                       &sizeSaveTimer, enforceMinimumSize]() {
             if (customPadMode != nextCustomPadMode) {
                 customPadMode = nextCustomPadMode;
                 sizeSaveTimer.stop();
                 restoreWindowSize();
-                QTimer::singleShot(50, window, restoreWindowSize);
-            } else if (window->size().expandedTo(window->minimumSize()) != window->size()) {
-                window->resize(window->size().expandedTo(window->minimumSize()));
+                enforceMinimumSize();
+            } else {
+                enforceMinimumSize();
             }
         });
     });
