@@ -76,6 +76,11 @@ Item {
         draftAssignments = copyAssignments()
         selectedSlot = -1
         editMode = true
+        editorPad.readyForDraftSync = false
+        editorPad.editMode = true
+        editorPad.draftAssignments = draftAssignments
+        editorPad.selectedSlot = selectedSlot
+        editorPad.readyForDraftSync = true
     }
 
     function finishEdit() {
@@ -147,43 +152,34 @@ Item {
         function clearOneShotShift() {}
     }
 
-    Loader {
-        id: editorLoader
-        active: root.editMode
-        sourceComponent: DeveloperPad {
-            id: editorPad
-            property bool readyForDraftSync: false
+    DeveloperPad {
+        id: editorPad
+        property bool readyForDraftSync: false
 
-            visible: false
-            width: 0
-            height: 0
-            appearanceStore: root.appearanceStore
-            customKeyStore: root.customKeyStore
-            inputBackend: root.inputBackend
-            modifierSource: modifierStub
+        visible: false
+        width: 0
+        height: 0
+        appearanceStore: root.appearanceStore
+        customKeyStore: root.customKeyStore
+        inputBackend: root.inputBackend
+        modifierSource: modifierStub
 
-            Component.onCompleted: {
-                editMode = true
-                draftAssignments = root.draftAssignments
-                selectedSlot = root.selectedSlot
-                readyForDraftSync = true
-            }
-            onDraftAssignmentsChanged: {
-                if (readyForDraftSync)
-                    root.draftAssignments = draftAssignments
-            }
-            onSelectedSlotChanged: root.selectedSlot = selectedSlot
+        onDraftAssignmentsChanged: {
+            if (readyForDraftSync)
+                root.draftAssignments = draftAssignments
+        }
+        onSelectedSlotChanged: root.selectedSlot = selectedSlot
 
-            Connections {
-                target: root
-                function onAssignmentPickerRequested() {
-                    editorPad.readyForDraftSync = false
-                    editorPad.selectedSlot = root.selectedSlot
-                    editorPad.draftAssignments = root.draftAssignments
-                    editorPad.readyForDraftSync = true
-                    editorPad.pickerOpen = true
-                    editorPad.openCustomKeyPicker()
-                }
+        Connections {
+            target: root
+            function onAssignmentPickerRequested() {
+                editorPad.readyForDraftSync = false
+                editorPad.editMode = true
+                editorPad.selectedSlot = root.selectedSlot
+                editorPad.draftAssignments = root.draftAssignments
+                editorPad.readyForDraftSync = true
+                editorPad.pickerOpen = true
+                editorPad.openCustomKeyPicker()
             }
         }
     }

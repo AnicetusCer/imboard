@@ -179,13 +179,19 @@ int main(int argc, char *argv[])
                      qOverload<>(&QTimer::start));
     bool customPadMode = appearance.customPadOnlyEnabled();
     QObject::connect(&appearance, &AppearanceStore::appearanceChanged, window,
-                     [window, &appearance, &customPadMode, &restoreWindowSize]() {
+                     [window, &appearance, &customPadMode, &restoreWindowSize,
+                      &sizeSaveTimer]() {
         const bool nextCustomPadMode = appearance.customPadOnlyEnabled();
+        if (customPadMode != nextCustomPadMode)
+            sizeSaveTimer.stop();
         QTimer::singleShot(0, window, [window, nextCustomPadMode,
-                                       &customPadMode, &restoreWindowSize]() {
+                                       &customPadMode, &restoreWindowSize,
+                                       &sizeSaveTimer]() {
             if (customPadMode != nextCustomPadMode) {
                 customPadMode = nextCustomPadMode;
+                sizeSaveTimer.stop();
                 restoreWindowSize();
+                QTimer::singleShot(50, window, restoreWindowSize);
             } else if (window->size().expandedTo(window->minimumSize()) != window->size()) {
                 window->resize(window->size().expandedTo(window->minimumSize()));
             }

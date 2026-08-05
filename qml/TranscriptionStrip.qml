@@ -74,7 +74,15 @@ Rectangle {
 
     function keepCursorVisible() {
         if (!active) return
-        Qt.callLater(function() {
+        cursorVisibilityTimer.restart()
+    }
+
+    Timer {
+        id: cursorVisibilityTimer
+        interval: 0
+        repeat: false
+        onTriggered: {
+            if (!root.active) return
             const cursor = transcriptArea.cursorRectangle
             if (cursor.y < transcriptViewport.contentY) {
                 transcriptViewport.contentY = Math.max(0, cursor.y - 3)
@@ -84,7 +92,7 @@ Rectangle {
                     Math.max(0, transcriptViewport.contentHeight - transcriptViewport.height),
                     cursor.y + cursor.height - transcriptViewport.height + 3)
             }
-        })
+        }
     }
 
     function handleLocalKey(key) {
