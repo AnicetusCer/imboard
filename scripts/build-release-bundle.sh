@@ -41,9 +41,10 @@ if command -v flatpak-builder >/dev/null 2>&1; then
     }
 elif flatpak info --user org.flatpak.Builder >/dev/null 2>&1 \
     || flatpak info org.flatpak.Builder >/dev/null 2>&1; then
+    GPG_AGENT_DIR="$(dirname "$(gpgconf --list-dirs agent-socket)")"
     run_flatpak_builder() {
         flatpak run --filesystem="$(pwd)" --filesystem="$SIGNING_HOME" \
-            org.flatpak.Builder "$@"
+            --filesystem="$GPG_AGENT_DIR" org.flatpak.Builder "$@"
     }
 else
     echo "Missing required command: flatpak-builder" >&2
