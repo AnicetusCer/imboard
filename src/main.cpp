@@ -35,8 +35,6 @@
 
 int main(int argc, char *argv[])
 {
-    qputenv("QML_DISABLE_DISK_CACHE", "1");
-
 #ifdef IMBOARD_HAVE_LAYER_SHELL
 #if QT_VERSION < 0x060500
     if (qEnvironmentVariableIsSet("WAYLAND_DISPLAY"))

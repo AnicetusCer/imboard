@@ -71,7 +71,6 @@ qt_add_qml_module(imboard
     URI Imboard
     VERSION 1.0
     RESOURCE_PREFIX /
-    NO_CACHEGEN
     NO_IMPORT_SCAN
     QML_FILES
         qml/Main.qml

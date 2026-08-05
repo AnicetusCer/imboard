@@ -90,8 +90,9 @@ and stops automatically after 60 seconds.
 
 Captured audio remains in memory. Imboard requests native 16 kHz mono float
 capture when the device supports it; otherwise `AudioConverter` mixes the
-device's preferred channel layout to mono and resamples it to the format
-required by the optional Whisper `small.en` model Flatpak extension.
+device's preferred channel layout to mono while resampling directly into the
+final 16 kHz buffer, avoiding a full-size intermediate mono recording. The
+result is passed to the optional Whisper `small.en` model Flatpak extension.
 `SpeechController` runs conversion and inference outside the UI thread, uses
 Vulkan compute when available with a CPU fallback, and frees the model and
 audio after each transcription. Audio and
@@ -133,6 +134,10 @@ PID, so a lock file alone cannot reliably identify a crashed instance. After a
 control request fails, a new process may replace an abandoned lock and socket
 only if it first acquires the application D-Bus name. If a live current instance
 owns that name, recovery is refused.
+
+QML resources are compiled into the release executable at build time. This
+avoids reparsing the complete interface during each process start and keeps
+startup independent of a writable runtime QML cache.
 
 ## Code boundaries
 

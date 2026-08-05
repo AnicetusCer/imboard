@@ -41,6 +41,17 @@ float sampleAt(const char *data, QAudioFormat::SampleFormat format)
     }
     return 0.0F;
 }
+
+float monoFrameAt(const char *data, qsizetype frame, int channelCount,
+                  int bytesPerSample, int bytesPerFrame,
+                  QAudioFormat::SampleFormat format)
+{
+    const char *frameData = data + frame * bytesPerFrame;
+    double sum = 0.0;
+    for (int channel = 0; channel < channelCount; ++channel)
+        sum += sampleAt(frameData + channel * bytesPerSample, format);
+    return static_cast<float>(sum / channelCount);
+}
 }
 
 namespace AudioConverter
@@ -61,32 +72,31 @@ QVector<float> toWhisperPcm(const QByteArray &bytes, const QAudioFormat &format)
     const qsizetype frameCount = bytes.size() / bytesPerFrame;
     if (frameCount < 1) return {};
 
-    QVector<float> mono;
-    mono.reserve(frameCount);
     const char *raw = bytes.constData();
-    for (qsizetype frame = 0; frame < frameCount; ++frame) {
-        double sum = 0.0;
-        const char *frameData = raw + frame * bytesPerFrame;
-        for (int channel = 0; channel < channelCount; ++channel)
-            sum += sampleAt(frameData + channel * bytesPerSample, format.sampleFormat());
-        mono.append(static_cast<float>(sum / channelCount));
+    if (sampleRate == targetRate) {
+        QVector<float> mono(frameCount);
+        for (qsizetype frame = 0; frame < frameCount; ++frame) {
+            mono[frame] = monoFrameAt(raw, frame, channelCount, bytesPerSample,
+                                      bytesPerFrame, format.sampleFormat());
+        }
+        return mono;
     }
 
-    if (sampleRate == targetRate) return mono;
-
     const qsizetype outputCount = static_cast<qsizetype>(
-        std::floor(static_cast<double>(mono.size()) * targetRate / sampleRate));
+        std::floor(static_cast<double>(frameCount) * targetRate / sampleRate));
     if (outputCount < 1) return {};
 
-    QVector<float> resampled;
-    resampled.reserve(outputCount);
+    QVector<float> resampled(outputCount);
     for (qsizetype outputIndex = 0; outputIndex < outputCount; ++outputIndex) {
         const double sourcePosition = static_cast<double>(outputIndex) * sampleRate / targetRate;
         const qsizetype lowerIndex = static_cast<qsizetype>(sourcePosition);
-        const qsizetype upperIndex = std::min(lowerIndex + 1, mono.size() - 1);
+        const qsizetype upperIndex = std::min(lowerIndex + 1, frameCount - 1);
         const float fraction = static_cast<float>(sourcePosition - lowerIndex);
-        resampled.append(mono.at(lowerIndex) * (1.0F - fraction)
-                         + mono.at(upperIndex) * fraction);
+        const float lower = monoFrameAt(raw, lowerIndex, channelCount, bytesPerSample,
+                                        bytesPerFrame, format.sampleFormat());
+        const float upper = monoFrameAt(raw, upperIndex, channelCount, bytesPerSample,
+                                        bytesPerFrame, format.sampleFormat());
+        resampled[outputIndex] = lower * (1.0F - fraction) + upper * fraction;
     }
     return resampled;
 }

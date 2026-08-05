@@ -36,6 +36,8 @@ private slots:
     void preservesMono16k();
     void mixesStereoChannels();
     void resamples48kTo16k();
+    void mixesWhileResampling();
+    void convertsMaximumDurationCapture();
     void sanitizesInvalidFloatSamples();
     void rejectsInvalidFormat();
 };
@@ -80,6 +82,41 @@ void AudioConverterTest::resamples48kTo16k()
         AudioConverter::toWhisperPcm(bytes, int16Format(48000, 1));
     QCOMPARE(samples.size(), 160);
     QVERIFY(samples.first() <= samples.last());
+}
+
+void AudioConverterTest::mixesWhileResampling()
+{
+    QByteArray bytes;
+    for (int frame = 0; frame < 6; ++frame) {
+        appendInt16(bytes, static_cast<qint16>(frame * 2000));
+        appendInt16(bytes, static_cast<qint16>(frame * 1000));
+    }
+
+    const QVector<float> samples =
+        AudioConverter::toWhisperPcm(bytes, int16Format(48000, 2));
+    QCOMPARE(samples.size(), 2);
+    QVERIFY(std::abs(samples.at(0)) < 0.0001F);
+    QVERIFY(std::abs(samples.at(1) - (4500.0F / 32768.0F)) < 0.0001F);
+}
+
+void AudioConverterTest::convertsMaximumDurationCapture()
+{
+    constexpr int durationSeconds = 60;
+    constexpr int sourceRate = 48000;
+    constexpr int channelCount = 2;
+    QByteArray bytes(durationSeconds * sourceRate * channelCount
+                         * static_cast<int>(sizeof(float)),
+                     '\0');
+
+    QAudioFormat format;
+    format.setSampleRate(sourceRate);
+    format.setChannelCount(channelCount);
+    format.setSampleFormat(QAudioFormat::Float);
+
+    const QVector<float> samples = AudioConverter::toWhisperPcm(bytes, format);
+    QCOMPARE(samples.size(), durationSeconds * 16000);
+    QCOMPARE(samples.first(), 0.0F);
+    QCOMPARE(samples.last(), 0.0F);
 }
 
 void AudioConverterTest::sanitizesInvalidFloatSamples()
