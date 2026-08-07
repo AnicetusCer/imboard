@@ -11,6 +11,7 @@
 #include <QDBusPendingCall>
 #include <QDBusReply>
 #include <QDBusServiceWatcher>
+#include <QElapsedTimer>
 #include <QFile>
 #include <QFileInfo>
 #include <QSettings>
@@ -285,13 +286,17 @@ bool PortalInputBackend::forgetPermission()
 bool PortalInputBackend::sendKeysym(quint32 keysym, bool pressed)
 {
     if (!ready()) return false;
+    QElapsedTimer elapsed;
+    elapsed.start();
     QDBusMessage message = QDBusMessage::createMethodCall(Service, ObjectPath, Interface,
                                                            QStringLiteral("NotifyKeyboardKeysym"));
     message << QVariant::fromValue(QDBusObjectPath(m_sessionPath)) << QVariantMap{}
             << qint32(keysym) << uint(pressed ? 1 : 0);
     const QDBusMessage reply = QDBusConnection::sessionBus().call(
         message, QDBus::Block, 1000);
-    if (reply.type() != QDBusMessage::ErrorMessage) return true;
+    const bool accepted = reply.type() != QDBusMessage::ErrorMessage;
+    emit inputEventCompleted(accepted, elapsed.elapsed());
+    if (accepted) return true;
     qWarning().noquote() << "Keyboard portal event failed:" << reply.errorMessage();
     return false;
 }

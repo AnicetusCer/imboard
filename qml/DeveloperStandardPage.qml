@@ -30,6 +30,8 @@ GridLayout {
 
             Layout.fillWidth: true
             Layout.fillHeight: true
+            diagnosticBackend: standardKey.controller
+                               ? standardKey.controller.inputBackend : null
             showBorders: standardKey.controller.appearanceStore.keyBordersVisible
             keyLabel: standardKey.keyAction[0]
             accent: standardKey.controller.appearanceStore.primary

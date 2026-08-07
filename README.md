@@ -27,7 +27,7 @@ In practice, that means:
 
 ## Status
 
-Current release: `0.6.0`.
+Current release: `0.7.0`.
 
 IMBOARD presents required keyboard-access setup on first visible launch. The
 standard desktop portal grants keyboard-only control and returns a restore token
@@ -102,18 +102,18 @@ It installs into your user account.
 
 2. Download these files from the GitHub release:
 
-   - `imboard-0.6.0-x86_64.flatpak`
-   - `imboard-0.6.0-x86_64-SHA256SUMS`
-   - `imboard-0.6.0-x86_64-SHA256SUMS.asc`
+   - `imboard-0.7.0-x86_64.flatpak`
+   - `imboard-0.7.0-x86_64-SHA256SUMS`
+   - `imboard-0.7.0-x86_64-SHA256SUMS.asc`
    - `imboard-release-signing-public.asc`
 
 3. Verify the release signature and downloaded bundle:
 
    ```sh
    gpg --import ./imboard-release-signing-public.asc
-   gpg --verify ./imboard-0.6.0-x86_64-SHA256SUMS.asc \
-       ./imboard-0.6.0-x86_64-SHA256SUMS
-   sha256sum --check --ignore-missing ./imboard-0.6.0-x86_64-SHA256SUMS
+   gpg --verify ./imboard-0.7.0-x86_64-SHA256SUMS.asc \
+       ./imboard-0.7.0-x86_64-SHA256SUMS
+   sha256sum --check --ignore-missing ./imboard-0.7.0-x86_64-SHA256SUMS
    ```
 
    Confirm that GPG reports fingerprint
@@ -124,7 +124,7 @@ It installs into your user account.
 4. Install it:
 
    ```sh
-   flatpak install --user ./imboard-0.6.0-x86_64.flatpak
+   flatpak install --user ./imboard-0.7.0-x86_64.flatpak
    ```
 
 5. Launch IMBOARD from the KDE app launcher, or run:
@@ -134,11 +134,11 @@ It installs into your user account.
    ```
 
 6. To enable offline transcription, also download
-   `imboard-model-small-en-0.6.0-x86_64.flatpak` from the same release and
+   `imboard-model-small-en-0.7.0-x86_64.flatpak` from the same release and
    install it:
 
    ```sh
-   flatpak install --user ./imboard-model-small-en-0.6.0-x86_64.flatpak
+   flatpak install --user ./imboard-model-small-en-0.7.0-x86_64.flatpak
    ```
 
    Restart IMBOARD after installing the model. Users who only need the
@@ -175,7 +175,7 @@ not need root once Flatpak and `flatpak-builder` are installed.
    ```sh
    git clone https://github.com/AnicetusCer/imboard.git
    cd imboard
-   git checkout v0.6.0
+   git checkout v0.7.0
    ```
 
 3. Build and install the user Flatpak:
@@ -232,6 +232,28 @@ The portal permission is powerful, so IMBOARD stays input-inert until setup
 succeeds and provides a `FORGET ACCESS` flow in CONFIG.
 
 For details, see [Security](SECURITY.md).
+
+## Input diagnostics
+
+If a touch appears to be missed, open **CONFIG**, choose **START** beside
+**INPUT DIAGNOSTICS**, close the results panel, and type normally. The keyboard
+header then shows a compact live summary; return to **CONFIG → VIEW** for the
+full counters.
+
+- **Touches** separates physical presses, completed button activations, and
+  touches cancelled before activation.
+- **Actions** counts logical text, key, or shortcut requests and whether Imboard
+  completed their delivery path.
+- **Portal events** counts individual press and release calls accepted or
+  rejected by the desktop portal.
+- **Portal latency** shows the last, average, and worst synchronous portal-call
+  duration.
+
+The mode never records key names or typed text. Its counters and timings remain
+in memory and disappear when Imboard exits; only the choice to leave diagnostics
+enabled is saved. Portal acceptance confirms that the desktop input service
+accepted an event, but target applications do not acknowledge to Imboard that
+they consumed it.
 
 ## Screenshots
 

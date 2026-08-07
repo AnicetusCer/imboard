@@ -30,6 +30,7 @@ public:
 
 signals:
     void stateChanged();
+    void inputEventCompleted(bool accepted, qint64 elapsedMilliseconds);
 
 private slots:
     void handleResponse(uint response, const QVariantMap &results);

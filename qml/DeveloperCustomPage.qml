@@ -168,6 +168,9 @@ Item {
                         id: customSlotKey
 
                         anchors.fill: parent
+                        diagnosticBackend: customSlotCell.hasController
+                                           && !customSlotCell.controller.editMode
+                                           ? customSlotCell.controller.inputBackend : null
                         compact: true
                         showBorders: customSlotCell.hasController
                                      ? customSlotCell.controller.appearanceStore.keyBordersVisible : true

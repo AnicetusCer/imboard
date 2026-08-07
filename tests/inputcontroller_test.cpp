@@ -114,6 +114,53 @@ private slots:
         InputController reloaded;
         QVERIFY(reloaded.experimentalUnicodeEnabled());
     }
+
+    void inputDiagnosticsArePrivateMemoryOnlyCounters()
+    {
+        InputController controller;
+        controller.setInputDiagnosticsEnabled(true);
+        QVERIFY(controller.inputDiagnosticsEnabled());
+
+        controller.recordDiagnosticTouchStarted();
+        controller.recordDiagnosticTouchActivated();
+        controller.recordDiagnosticTouchStarted();
+        controller.recordDiagnosticTouchCanceled();
+
+        QVERIFY(!controller.sendText(QStringLiteral("private diagnostic text")));
+        controller.setLocalTextEditing(true);
+        QVERIFY(controller.sendKey(QStringLiteral("Backspace")));
+
+        controller.recordPortalEvent(true, 12);
+        controller.recordPortalEvent(false, 125);
+
+        QCOMPARE(controller.diagnosticTouchStarts(), qulonglong(2));
+        QCOMPARE(controller.diagnosticTouchActivations(), qulonglong(1));
+        QCOMPARE(controller.diagnosticTouchCancellations(), qulonglong(1));
+        QCOMPARE(controller.diagnosticActionsRequested(), qulonglong(2));
+        QCOMPARE(controller.diagnosticActionsCompleted(), qulonglong(1));
+        QCOMPARE(controller.diagnosticActionsFailed(), qulonglong(1));
+        QCOMPARE(controller.diagnosticPortalEventsAccepted(), qulonglong(1));
+        QCOMPARE(controller.diagnosticPortalEventsFailed(), qulonglong(1));
+        QCOMPARE(controller.diagnosticLastPortalLatencyMs(), 125);
+        QCOMPARE(controller.diagnosticAveragePortalLatencyMs(), 68.5);
+        QCOMPARE(controller.diagnosticWorstPortalLatencyMs(), 125);
+        QVERIFY(!controller.diagnosticSummary().contains(
+            QStringLiteral("private diagnostic text")));
+
+        InputController reloaded;
+        QVERIFY(reloaded.inputDiagnosticsEnabled());
+        QCOMPARE(reloaded.diagnosticActionsRequested(), qulonglong(0));
+
+        controller.resetInputDiagnostics();
+        QCOMPARE(controller.diagnosticTouchStarts(), qulonglong(0));
+        QCOMPARE(controller.diagnosticActionsRequested(), qulonglong(0));
+        QCOMPARE(controller.diagnosticPortalEventsAccepted(), qulonglong(0));
+        QCOMPARE(controller.diagnosticWorstPortalLatencyMs(), 0);
+
+        controller.setInputDiagnosticsEnabled(false);
+        controller.recordDiagnosticTouchStarted();
+        QCOMPARE(controller.diagnosticTouchStarts(), qulonglong(0));
+    }
 };
 
 QTEST_GUILESS_MAIN(InputControllerTest)

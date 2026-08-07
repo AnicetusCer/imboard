@@ -16,9 +16,12 @@ Button {
     property bool compact: false
     property bool showBorders: true
     property bool repeatEnabled: false
+    property var diagnosticBackend: null
     readonly property bool hasSubLabel: subLabel.length > 0
     readonly property bool multiLineLabel: keyLabel.indexOf("\n") >= 0
     property bool manualRepeatActive: false
+    property bool diagnosticTouchActive: false
+    property bool diagnosticActivationRecorded: false
 
     text: keyLabel
     font.pixelSize: compact ? 9 : Math.max(12, Math.min(18, height * 0.22))
@@ -29,10 +32,20 @@ Button {
     autoRepeatInterval: 125
 
     onPressed: {
+        diagnosticTouchActive = true
+        diagnosticActivationRecorded = false
+        if (diagnosticBackend && diagnosticBackend.inputDiagnosticsEnabled)
+            diagnosticBackend.recordDiagnosticTouchStarted()
         if (repeatEnabled) repeatStartTimer.restart()
     }
     onReleased: root.stopManualRepeat()
-    onCanceled: root.stopManualRepeat()
+    onCanceled: {
+        if (diagnosticTouchActive && diagnosticBackend
+                && diagnosticBackend.inputDiagnosticsEnabled)
+            diagnosticBackend.recordDiagnosticTouchCanceled()
+        diagnosticTouchActive = false
+        root.stopManualRepeat()
+    }
     onPressAndHold: {
         if (repeatEnabled) root.startManualRepeat()
     }
@@ -48,6 +61,19 @@ Button {
         manualRepeatActive = false
         repeatStartTimer.stop()
         repeatTimer.stop()
+    }
+
+    Connections {
+        target: root
+        function onClicked() {
+            if (root.diagnosticTouchActive && !root.diagnosticActivationRecorded
+                    && root.diagnosticBackend
+                    && root.diagnosticBackend.inputDiagnosticsEnabled) {
+                root.diagnosticActivationRecorded = true
+                root.diagnosticBackend.recordDiagnosticTouchActivated()
+            }
+            root.diagnosticTouchActive = false
+        }
     }
 
     Timer {

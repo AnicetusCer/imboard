@@ -12,6 +12,7 @@
 #include <QTimer>
 
 #include <algorithm>
+#include <limits>
 #include <utility>
 
 namespace
@@ -38,11 +39,15 @@ InputController::InputController(QObject *parent)
     const QSettings settings;
     m_experimentalUnicodeEnabled =
         settings.value(QStringLiteral("input/experimentalUnicode"), false).toBool();
+    m_inputDiagnosticsEnabled =
+        settings.value(QStringLiteral("input/diagnosticsEnabled"), false).toBool();
     if (settings.status() != QSettings::NoError)
-        qWarning() << "Could not read experimental Unicode input setting";
+        qWarning() << "Could not read input settings";
 
     connect(&m_portal, &PortalInputBackend::stateChanged,
             this, &InputController::backendReadyChanged);
+    connect(&m_portal, &PortalInputBackend::inputEventCompleted,
+            this, &InputController::recordPortalEvent);
 }
 
 bool InputController::backendReady() const noexcept
@@ -93,6 +98,169 @@ void InputController::setLocalTextEditing(bool enabled)
     emit localTextEditingChanged();
 }
 
+bool InputController::inputDiagnosticsEnabled() const noexcept
+{
+    return m_inputDiagnosticsEnabled;
+}
+
+void InputController::setInputDiagnosticsEnabled(bool enabled)
+{
+    if (m_inputDiagnosticsEnabled == enabled) return;
+
+    QSettings settings;
+    settings.setValue(QStringLiteral("input/diagnosticsEnabled"), enabled);
+    settings.sync();
+    if (settings.status() != QSettings::NoError) {
+        qWarning() << "Could not save input diagnostics setting";
+        return;
+    }
+
+    m_inputDiagnosticsEnabled = enabled;
+    emit inputDiagnosticsEnabledChanged();
+}
+
+qulonglong InputController::diagnosticTouchStarts() const noexcept
+{
+    return m_diagnosticTouchStarts;
+}
+
+qulonglong InputController::diagnosticTouchActivations() const noexcept
+{
+    return m_diagnosticTouchActivations;
+}
+
+qulonglong InputController::diagnosticTouchCancellations() const noexcept
+{
+    return m_diagnosticTouchCancellations;
+}
+
+qulonglong InputController::diagnosticActionsRequested() const noexcept
+{
+    return m_diagnosticActionsRequested;
+}
+
+qulonglong InputController::diagnosticActionsCompleted() const noexcept
+{
+    return m_diagnosticActionsCompleted;
+}
+
+qulonglong InputController::diagnosticActionsFailed() const noexcept
+{
+    return m_diagnosticActionsFailed;
+}
+
+qulonglong InputController::diagnosticPortalEventsAccepted() const noexcept
+{
+    return m_diagnosticPortalEventsAccepted;
+}
+
+qulonglong InputController::diagnosticPortalEventsFailed() const noexcept
+{
+    return m_diagnosticPortalEventsFailed;
+}
+
+int InputController::diagnosticLastPortalLatencyMs() const noexcept
+{
+    return m_diagnosticLastPortalLatencyMs;
+}
+
+double InputController::diagnosticAveragePortalLatencyMs() const noexcept
+{
+    const qulonglong eventCount = m_diagnosticPortalEventsAccepted
+                                 + m_diagnosticPortalEventsFailed;
+    return eventCount == 0 ? 0.0
+                           : static_cast<double>(m_diagnosticPortalLatencyTotalMs)
+                                 / static_cast<double>(eventCount);
+}
+
+int InputController::diagnosticWorstPortalLatencyMs() const noexcept
+{
+    return m_diagnosticWorstPortalLatencyMs;
+}
+
+QString InputController::diagnosticSummary() const
+{
+    return QStringLiteral("DIAG T %1/%2/%3  A %4/%5  P %6/%7  L %8/%9 ms")
+        .arg(m_diagnosticTouchStarts)
+        .arg(m_diagnosticTouchActivations)
+        .arg(m_diagnosticTouchCancellations)
+        .arg(m_diagnosticActionsCompleted)
+        .arg(m_diagnosticActionsFailed)
+        .arg(m_diagnosticPortalEventsAccepted)
+        .arg(m_diagnosticPortalEventsFailed)
+        .arg(m_diagnosticLastPortalLatencyMs)
+        .arg(m_diagnosticWorstPortalLatencyMs);
+}
+
+void InputController::recordDiagnosticTouchStarted()
+{
+    if (!m_inputDiagnosticsEnabled) return;
+    ++m_diagnosticTouchStarts;
+    emit inputDiagnosticsChanged();
+}
+
+void InputController::recordDiagnosticTouchActivated()
+{
+    if (!m_inputDiagnosticsEnabled) return;
+    ++m_diagnosticTouchActivations;
+    emit inputDiagnosticsChanged();
+}
+
+void InputController::recordDiagnosticTouchCanceled()
+{
+    if (!m_inputDiagnosticsEnabled) return;
+    ++m_diagnosticTouchCancellations;
+    emit inputDiagnosticsChanged();
+}
+
+void InputController::resetInputDiagnostics()
+{
+    m_diagnosticTouchStarts = 0;
+    m_diagnosticTouchActivations = 0;
+    m_diagnosticTouchCancellations = 0;
+    m_diagnosticActionsRequested = 0;
+    m_diagnosticActionsCompleted = 0;
+    m_diagnosticActionsFailed = 0;
+    m_diagnosticPortalEventsAccepted = 0;
+    m_diagnosticPortalEventsFailed = 0;
+    m_diagnosticPortalLatencyTotalMs = 0;
+    m_diagnosticLastPortalLatencyMs = 0;
+    m_diagnosticWorstPortalLatencyMs = 0;
+    emit inputDiagnosticsChanged();
+}
+
+void InputController::beginDiagnosticAction()
+{
+    if (!m_inputDiagnosticsEnabled) return;
+    ++m_diagnosticActionsRequested;
+    emit inputDiagnosticsChanged();
+}
+
+void InputController::completeDiagnosticAction(bool accepted)
+{
+    if (!m_inputDiagnosticsEnabled) return;
+    if (accepted)
+        ++m_diagnosticActionsCompleted;
+    else
+        ++m_diagnosticActionsFailed;
+    emit inputDiagnosticsChanged();
+}
+
+void InputController::recordPortalEvent(bool accepted, qint64 elapsedMilliseconds)
+{
+    if (!m_inputDiagnosticsEnabled) return;
+    const int latency = static_cast<int>(std::clamp<qint64>(
+        elapsedMilliseconds, 0, std::numeric_limits<int>::max()));
+    if (accepted)
+        ++m_diagnosticPortalEventsAccepted;
+    else
+        ++m_diagnosticPortalEventsFailed;
+    m_diagnosticPortalLatencyTotalMs += static_cast<qulonglong>(latency);
+    m_diagnosticLastPortalLatencyMs = latency;
+    m_diagnosticWorstPortalLatencyMs = std::max(m_diagnosticWorstPortalLatencyMs, latency);
+    emit inputDiagnosticsChanged();
+}
+
 bool InputController::canSendText(const QString &text) const
 {
     const QList<uint> codepoints = text.toUcs4();
@@ -126,21 +294,31 @@ bool InputController::sendText(const QString &text)
     const QString description = QStringLiteral("text:%1-codepoint%2")
                                     .arg(codepoints.size())
                                     .arg(codepoints.size() == 1 ? QString() : QStringLiteral("s"));
-    qInfo().noquote() << description;
     emit actionRequested(description);
+    beginDiagnosticAction();
     if (hasUnsupportedTextControl(codepoints)) {
         qWarning() << "Rejected text containing an unsupported control character";
+        completeDiagnosticAction(false);
         return false;
     }
     if (m_localTextEditing) {
         emit localTextRequested(text);
+        completeDiagnosticAction(true);
         return true;
     }
     const bool needsClipboardPaste = requiresUnicodePaste(codepoints);
-    if (!backendReady()) return false;
+    if (!backendReady()) {
+        completeDiagnosticAction(false);
+        return false;
+    }
     if (needsClipboardPaste) {
-        if (m_experimentalUnicodeEnabled) return pasteTextViaClipboard(text);
+        if (m_experimentalUnicodeEnabled) {
+            const bool accepted = pasteTextViaClipboard(text);
+            completeDiagnosticAction(accepted);
+            return accepted;
+        }
         qWarning() << "Rejected non-ASCII text because experimental Unicode input is disabled";
+        completeDiagnosticAction(false);
         return false;
     }
     for (qsizetype index = 0; index < codepoints.size(); ++index) {
@@ -152,40 +330,49 @@ bool InputController::sendText(const QString &text)
         const quint32 keysym = codepoint == '\n' || codepoint == '\r' ? namedKeysym(QStringLiteral("Enter"))
                                : codepoint == '\t' ? namedKeysym(QStringLiteral("Tab"))
                                                     : codepoint;
-        if (!m_portal.tapKeysym(keysym)) return false;
+        if (!m_portal.tapKeysym(keysym)) {
+            completeDiagnosticAction(false);
+            return false;
+        }
     }
+    completeDiagnosticAction(true);
     return true;
 }
 
-void InputController::sendKey(const QString &key)
+bool InputController::sendKey(const QString &key)
 {
     const QString description = QStringLiteral("key:%1").arg(key);
-    qInfo().noquote() << description;
     emit actionRequested(description);
+    beginDiagnosticAction();
     const quint32 keysym = namedKeysym(key);
     if (keysym == 0) {
         qWarning().noquote() << "Unsupported key:" << key;
-        return;
+        completeDiagnosticAction(false);
+        return false;
     }
     if (m_localTextEditing) {
         emit localKeyRequested(key);
-        return;
+        completeDiagnosticAction(true);
+        return true;
     }
-    if (backendReady()) m_portal.tapKeysym(keysym);
+    const bool accepted = backendReady() && m_portal.tapKeysym(keysym);
+    completeDiagnosticAction(accepted);
+    return accepted;
 }
 
-void InputController::sendChord(const QStringList &modifiers, const QString &key)
+bool InputController::sendChord(const QStringList &modifiers, const QString &key)
 {
     const QString description = QStringLiteral("chord:%1+%2")
                                     .arg(modifiers.join(QLatin1Char('+')), key);
-    qInfo().noquote() << description;
     emit actionRequested(description);
+    beginDiagnosticAction();
     const QSet<QString> allowedModifiers{
         QStringLiteral("Ctrl"), QStringLiteral("Shift"),
         QStringLiteral("Alt"), QStringLiteral("Meta")};
     if (modifiers.isEmpty()) {
         qWarning() << "Rejected a chord without modifiers";
-        return;
+        completeDiagnosticAction(false);
+        return false;
     }
     QList<quint32> modifierKeysyms;
     for (const QString &modifier : modifiers) {
@@ -193,7 +380,8 @@ void InputController::sendChord(const QStringList &modifiers, const QString &key
         if (!allowedModifiers.contains(modifier)
             || keysym == 0 || modifierKeysyms.contains(keysym)) {
             qWarning().noquote() << "Invalid chord modifier:" << modifier;
-            return;
+            completeDiagnosticAction(false);
+            return false;
         }
         modifierKeysyms.append(keysym);
     }
@@ -201,24 +389,31 @@ void InputController::sendChord(const QStringList &modifiers, const QString &key
     const quint32 keysym = namedKeysym(normalizedKey);
     if (keysym == 0) {
         qWarning().noquote() << "Unsupported chord key:" << key;
-        return;
+        completeDiagnosticAction(false);
+        return false;
     }
     if (m_localTextEditing) {
         emit localChordRequested(modifiers, key);
-        return;
+        completeDiagnosticAction(true);
+        return true;
     }
-    if (!backendReady()) return;
+    if (!backendReady()) {
+        completeDiagnosticAction(false);
+        return false;
+    }
 
     QList<quint32> pressedModifiers;
     for (const quint32 modifierKeysym : std::as_const(modifierKeysyms)) {
         if (!m_portal.pressKeysym(modifierKeysym)) break;
         pressedModifiers.append(modifierKeysym);
     }
-    if (pressedModifiers.size() == modifierKeysyms.size())
-        m_portal.tapKeysym(keysym);
+    bool accepted = pressedModifiers.size() == modifierKeysyms.size();
+    if (accepted) accepted = m_portal.tapKeysym(keysym);
     for (auto iterator = pressedModifiers.crbegin(); iterator != pressedModifiers.crend(); ++iterator) {
-        m_portal.releaseKeysym(*iterator);
+        if (!m_portal.releaseKeysym(*iterator)) accepted = false;
     }
+    completeDiagnosticAction(accepted);
+    return accepted;
 }
 
 bool InputController::pasteTextViaClipboard(const QString &text)

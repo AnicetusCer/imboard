@@ -206,6 +206,13 @@ Window {
         onExitRequested: Qt.quit()
     }
 
+    InputDiagnosticsPopup {
+        id: inputDiagnosticsPopup
+        parent: Overlay.overlay
+        appearanceStore: root.appearanceStore
+        inputController: root.inputController
+    }
+
     AboutPopup {
         id: aboutPopup
         parent: Overlay.overlay
@@ -250,6 +257,7 @@ Window {
         onPermissionSetupRequested: portalExplanationPopup.open()
         onRemoveAccessRequested: removeAccessPopup.open()
         onSpeechSetupRequested: speechSetupPopup.open()
+        onInputDiagnosticsRequested: inputDiagnosticsPopup.open()
     }
 
     PermissionSetupPopup {

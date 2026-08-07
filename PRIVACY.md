@@ -31,7 +31,11 @@ Imboard stores local settings with Qt `QSettings`, including:
 - selected keyboard layout
 - custom-key assignments
 - session-startup preference
+- whether input diagnostics are enabled
 - the portal restore token used to reconnect keyboard access
+
+Input diagnostic counters and timings are held in memory only. They are not
+written to settings and contain no key names or typed text.
 
 The config menu can disconnect Imboard and delete its saved keyboard-access
 restore token. Your desktop privacy settings may separately keep an inactive
@@ -48,6 +52,7 @@ work in every application.
 
 ## Logging
 
-Imboard must not log typed text contents. Diagnostic logs may record that a text,
-key, or shortcut action was requested, but not the actual text payload.
-The same rule applies to recorded audio and transcript contents.
+Imboard must not log typed text contents or individual key actions. Opt-in input
+diagnostics expose only in-memory counts and portal-call timings through the
+local interface. The same no-content rule applies to recorded audio and
+transcript contents.

@@ -71,6 +71,7 @@ Rectangle {
         anchors.top: parent.top
         anchors.margins: 10
         appearanceStore: root.appearanceStore
+        inputController: root.inputController
         keyboardLayoutStore: root.keyboardLayoutStore
         speechController: root.speechController
         surfaceController: root.surfaceController

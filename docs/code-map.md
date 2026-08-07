@@ -32,8 +32,8 @@ current implementation rather than future plans.
 | `appearancestore.*` | Palette, opacity, and pad-side persistence | `appearancestore-test` |
 | `compatibilitystore.*` | One-time non-KDE session warning | `compatibilitystore-test` |
 | `customkeystore.*` | Validation and persistence of sixteen assignments | `customkeystore-test` |
-| `inputcontroller.*` | Public action API and keysym mapping | QML smoke, manual input tests |
-| `portalinputbackend.*` | Portal state machine, service-restart recovery, and safe key delivery | `portalinputbackend-test` |
+| `inputcontroller.*` | Public action API, keysym mapping, and memory-only diagnostic aggregation | input unit tests, QML smoke, manual input tests |
+| `portalinputbackend.*` | Portal state machine, service-restart recovery, safe key delivery, and per-event timing | `portalinputbackend-test` |
 | `keyboardlayoutstore.*` | Layout resource loading and normalization | `keyboardlayoutstore-test` |
 | `surfacecontroller.*` | Layer-shell setup, ghost move, resize, position | lifecycle, QML smoke |
 | `startupmanager.*` | Background portal or native autostart entry | `startupmanager-test` |
@@ -57,6 +57,7 @@ current implementation rather than future plans.
 | `DeveloperPadCatalog.qml` | Declarative standard-page and custom-picker actions |
 | `CustomKeyPickerPopup.qml` | Filtered custom-key catalog presentation |
 | `KeyCap.qml` | Shared touch key and tooltip presentation |
+| `InputDiagnosticsPopup.qml` | Privacy-safe touch, action, portal, and latency counters |
 | `AppearancePopup.qml` | Theme and background opacity |
 | `LayoutPopup.qml` | Regional layout selection |
 | `ConfigPopup.qml` | Startup state and access-management entry points |
@@ -81,6 +82,7 @@ Qt stores application settings using organization `AnicetusCer` and application
 - `customKeys/assignments`
 - `keyboard/layout`
 - `portal/setupComplete`, `portal/restoreToken`
+- `input/experimentalUnicode`, `input/diagnosticsEnabled`
 - `startup/portalEnabled`
 - `startup/promptSeen`
 - `window/fullSize`, `window/customPadSize`, `window/layerPosition`

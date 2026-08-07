@@ -165,6 +165,16 @@ Test on the Steam Deck desktop session:
    - ordinary transcribed text applies correctly in both Kate and Zed;
    - transcription still works after returning from Gaming Mode and after a
      reboot.
+10. Confirm input diagnostics:
+    - starting diagnostics from CONFIG shows the live header summary;
+    - normal taps increase touch starts, activations, completed actions, and
+      accepted portal events;
+    - deliberately sliding off a key before release increases cancellations
+      without sending an action;
+    - VIEW shows last, average, and worst portal latency;
+    - RESET clears every counter, and STOP removes the live summary;
+    - neither the diagnostics panel nor the journal contains typed text or key
+      names.
 
 ## Known release caveats
 

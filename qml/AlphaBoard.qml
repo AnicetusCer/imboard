@@ -149,6 +149,7 @@ Item {
                         Layout.fillWidth: true
                         Layout.fillHeight: true
                         Layout.preferredWidth: modelData.width || 46
+                        diagnosticBackend: root.inputBackend
                         showBorders: root.appearanceStore.keyBordersVisible
                         keyLabel: modelData.type === "letter"
                                   && (root.shifted !== root.capsLocked)

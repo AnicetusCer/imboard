@@ -209,6 +209,8 @@ Item {
                 Layout.fillHeight: true
                 Layout.minimumWidth: 0
                 Layout.minimumHeight: 0
+                diagnosticBackend: customPadKey.controller.editorMode
+                                   ? null : customPadKey.controller.inputBackend
                 showBorders: customPadKey.controller.appearanceStore.keyBordersVisible
                 keyLabel: customPadKey.assignment && customPadKey.assignment.label
                           ? customPadKey.assignment.label : "+"

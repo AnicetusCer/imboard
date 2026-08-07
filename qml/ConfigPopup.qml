@@ -17,6 +17,7 @@ Popup {
     signal permissionSetupRequested
     signal removeAccessRequested
     signal speechSetupRequested
+    signal inputDiagnosticsRequested
 
     function customPadColumnLabel() {
         if (root.appearanceStore.customPadColumns === 0) return "AUTO"
@@ -107,6 +108,37 @@ Popup {
                 onClicked: {
                     if (!root.startupManager.busy)
                         root.startupManager.setEnabled(!root.startupManager.enabled)
+                }
+            }
+        }
+
+        RowLayout {
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+            Label {
+                Layout.fillWidth: true
+                text: "INPUT DIAGNOSTICS"
+                color: root.inputController.inputDiagnosticsEnabled
+                       ? root.appearanceStore.secondary : root.appearanceStore.primary
+                font.bold: true
+                font.pixelSize: 10
+                elide: Text.ElideRight
+            }
+            KeyCap {
+                Layout.preferredWidth: 76
+                Layout.fillHeight: true
+                showBorders: root.appearanceStore.keyBordersVisible
+                keyLabel: root.inputController.inputDiagnosticsEnabled ? "VIEW" : "START"
+                accent: root.inputController.inputDiagnosticsEnabled
+                        ? "#72ff9f" : root.appearanceStore.primary
+                toolTipText: "Measure touch activation, cancelled touches, portal results, and input latency without recording typed content"
+                onClicked: {
+                    if (!root.inputController.inputDiagnosticsEnabled) {
+                        root.inputController.resetInputDiagnostics()
+                        root.inputController.inputDiagnosticsEnabled = true
+                    }
+                    root.close()
+                    root.inputDiagnosticsRequested()
                 }
             }
         }

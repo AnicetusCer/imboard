@@ -9,6 +9,7 @@ Rectangle {
 
     required property var appearanceStore
     required property var keyboardLayoutStore
+    required property var inputController
     required property var speechController
     required property var surfaceController
 
@@ -29,7 +30,8 @@ Rectangle {
 
     MouseArea {
         anchors.left: exitButton.right
-        anchors.right: padSideButton.left
+        anchors.right: root.inputController.inputDiagnosticsEnabled
+                       ? transcriptionButton.left : padSideButton.left
         anchors.top: parent.top
         anchors.bottom: parent.bottom
         anchors.leftMargin: 6
@@ -58,12 +60,16 @@ Rectangle {
         id: titleLabel
         anchors.left: exitButton.right
         anchors.leftMargin: 10
-        anchors.right: padSideButton.left
+        anchors.right: root.inputController.inputDiagnosticsEnabled
+                       ? transcriptionButton.left : padSideButton.left
         anchors.rightMargin: 8
         anchors.verticalCenter: parent.verticalCenter
-        text: "⠿  IMBOARD"
-        color: Qt.lighter(root.appearanceStore.primary, 1.25)
-        font.pixelSize: 12
+        text: root.inputController.inputDiagnosticsEnabled
+              ? root.inputController.diagnosticSummary : "⠿  IMBOARD"
+        color: root.inputController.inputDiagnosticsEnabled
+               && root.inputController.diagnosticPortalEventsFailed > 0
+               ? "#ff6d91" : Qt.lighter(root.appearanceStore.primary, 1.25)
+        font.pixelSize: root.inputController.inputDiagnosticsEnabled ? 9 : 12
         font.bold: true
         style: Text.Outline
         styleColor: "#f0000000"

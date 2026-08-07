@@ -74,6 +74,15 @@ The UI talks only to `InputController`, which accepts three action types:
 - `chord`: hold modifiers while pressing one key.
 Arbitrary processes and shell commands are explicitly outside the action model.
 
+Opt-in input diagnostics instrument three boundaries without retaining input
+content: `KeyCap` counts touch starts, activations, and cancellations;
+`InputController` counts completed or failed logical actions; and
+`PortalInputBackend` measures each synchronous press or release call and reports
+whether the portal accepted it. Counts and timings are memory-only. The enabled
+preference may persist, but no key name, text, portal session path, or target
+application is stored or logged. A successful D-Bus method reply proves portal
+acceptance, not consumption by the focused target application.
+
 ASCII text is sent directly as keysyms. Emoji and other non-ASCII text are an
 experimental opt-in because the fallback writes the text to the clipboard and
 then sends `Ctrl+V`. Imboard attempts to restore the previous clipboard text

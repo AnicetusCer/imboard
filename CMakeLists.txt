@@ -3,7 +3,7 @@
 
 cmake_minimum_required(VERSION 3.21)
 
-project(imboard VERSION 0.6.0 LANGUAGES CXX)
+project(imboard VERSION 0.7.0 LANGUAGES CXX)
 
 include(CTest)
 
@@ -86,6 +86,7 @@ qt_add_qml_module(imboard
         qml/DeveloperPad.qml
         qml/DeveloperPadCatalog.qml
         qml/DeveloperStandardPage.qml
+        qml/InputDiagnosticsPopup.qml
         qml/KeyboardSurface.qml
         qml/KeyboardHeader.qml
         qml/KeyCap.qml

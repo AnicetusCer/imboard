@@ -82,6 +82,14 @@
   <content_rating type="oars-1.1" />
 
   <releases>
+    <release version="0.7.0" date="2026-08-07">
+      <description>
+        <p>
+          Minor release adding opt-in, privacy-preserving input diagnostics for
+          touch activation, input delivery results, and portal-call latency.
+        </p>
+      </description>
+    </release>
     <release version="0.6.0" date="2026-08-05">
       <description>
         <p>

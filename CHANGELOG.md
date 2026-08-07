@@ -1,5 +1,28 @@
 # Changelog
 
+## 0.7.0 - 2026-08-07
+
+Minor release adding privacy-preserving input diagnostics for investigating
+missed or delayed on-screen key presses.
+
+### Added
+
+- Add an opt-in input diagnostic mode with live and detailed counters for touch
+  starts, activations, cancellations, logical input actions, portal event
+  results, and portal-call latency.
+- Add reset and stop controls, a compact live header summary, and explanatory
+  guidance that distinguishes portal acceptance from target-app consumption.
+- Add automated coverage for diagnostic counter behavior, in-memory-only data,
+  persisted opt-in state, and the diagnostic panel's minimum-size layout.
+
+### Changed
+
+- Stop writing individual input-action descriptions to the application journal;
+  diagnostic data contains no key names, typed text, target application, or
+  portal session identifiers.
+- Document the diagnostic boundaries, privacy guarantees, maintenance map, and
+  release test procedure.
+
 ## 0.6.0 - 2026-08-05
 
 Minor release making offline transcription optional, hardening its release

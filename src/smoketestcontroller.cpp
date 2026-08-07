@@ -22,6 +22,7 @@ enum SmokeExitCode {
     LayoutPopupFailure,
     DeveloperPadFailure,
     ConfigPopupFailure,
+    InputDiagnosticsPopupFailure,
     PermissionPopupFailure,
     RemoveAccessPopupFailure,
     CompactPadFailure,
@@ -54,6 +55,10 @@ bool schedule(QGuiApplication &app, QWindow *window, AppearanceStore &appearance
     auto *layoutOptionsGrid =
         window->findChild<QObject *>(QStringLiteral("layoutOptionsGrid"));
     auto *configPopup = window->findChild<QObject *>(QStringLiteral("configPopup"));
+    auto *inputDiagnosticsPopup =
+        window->findChild<QObject *>(QStringLiteral("inputDiagnosticsPopup"));
+    auto *inputDiagnosticsContent =
+        window->findChild<QObject *>(QStringLiteral("inputDiagnosticsContent"));
     auto *portalExplanationPopup =
         window->findChild<QObject *>(QStringLiteral("portalExplanationPopup"));
     auto *removeAccessPopup =
@@ -77,6 +82,7 @@ bool schedule(QGuiApplication &app, QWindow *window, AppearanceStore &appearance
     if (!picker || !grid || !aboutPopup || !appearancePopup || !layoutPopup
         || !speechSetupPopup
         || !layoutPopupContent || !layoutOptionsGrid || !configPopup
+        || !inputDiagnosticsPopup || !inputDiagnosticsContent
         || !portalExplanationPopup || !removeAccessPopup
         || !alphaPanel || !developerPanel || !customPadOnlyPage || !customPadOnlyGrid
         || !keyboardSurface || !transcriptionStrip || !transcriptionButton
@@ -177,7 +183,8 @@ bool schedule(QGuiApplication &app, QWindow *window, AppearanceStore &appearance
         }
         if (!invoke(configPopup, "open")) app.exit(DeveloperPadFailure);
     });
-    QTimer::singleShot(1850, &app, [&app, configPopup, portalExplanationPopup]() {
+    QTimer::singleShot(1850, &app,
+                       [&app, configPopup, inputDiagnosticsPopup]() {
         const qreal width = configPopup->property("width").toReal();
         const qreal height = configPopup->property("height").toReal();
         if (width < 300.0 || height < 150.0) {
@@ -186,8 +193,27 @@ bool schedule(QGuiApplication &app, QWindow *window, AppearanceStore &appearance
             app.exit(ConfigPopupFailure);
             return;
         }
-        if (!invoke(configPopup, "close") || !invoke(portalExplanationPopup, "open"))
+        if (!invoke(configPopup, "close") || !invoke(inputDiagnosticsPopup, "open"))
             app.exit(ConfigPopupFailure);
+    });
+    QTimer::singleShot(2000, &app,
+                       [&app, inputDiagnosticsPopup, inputDiagnosticsContent,
+                        portalExplanationPopup]() {
+        const qreal width = inputDiagnosticsPopup->property("width").toReal();
+        const qreal height = inputDiagnosticsPopup->property("height").toReal();
+        const qreal contentWidth = inputDiagnosticsContent->property("width").toReal();
+        const qreal contentHeight = inputDiagnosticsContent->property("height").toReal();
+        if (width < 400.0 || height < 200.0
+            || contentWidth < 350.0 || contentHeight < 170.0) {
+            qCritical() << "Input diagnostics popup collapsed during smoke test:"
+                        << width << height << contentWidth << contentHeight;
+            app.exit(InputDiagnosticsPopupFailure);
+            return;
+        }
+        if (!invoke(inputDiagnosticsPopup, "close")
+            || !invoke(portalExplanationPopup, "open")) {
+            app.exit(InputDiagnosticsPopupFailure);
+        }
     });
     QTimer::singleShot(2100, &app, [&app, portalExplanationPopup, removeAccessPopup]() {
         const qreal width = portalExplanationPopup->property("width").toReal();
